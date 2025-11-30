@@ -1,1579 +1,1305 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Personal Finance Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ledger Luxe | Dual Budget Control</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* Custom scrollbar for webkit browsers */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.7); border-radius: 999px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 1); }
+    :root {
+      color-scheme: dark;
+      --slate-950: #030712;
+      --accent-rose: #f472b6;
+      --accent-blue: #60a5fa;
+      --accent-amber: #facc15;
+    }
+    
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: radial-gradient(circle at top, rgba(250, 204, 21, 0.08), transparent 60%),
+                  radial-gradient(circle at 20% 20%, rgba(96, 165, 250, 0.08), transparent 45%),
+                  #020617;
+      color: #f8fafc;
+    }
+    
+    .glass {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.55));
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      box-shadow: 0 10px 40px rgba(2, 6, 23, 0.65);
+    }
+    
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.5); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(248, 250, 252, 0.7); }
+    
+    .delete-btn {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    
+    tr:hover .delete-btn {
+      opacity: 1;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .nav-btn.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+    
+    .quick-add-form {
+      transition: all 0.3s ease;
+    }
+    
+    .quick-add-form:hover {
+      transform: translateY(-2px);
+    }
+    
+    .form-toggle {
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .form-toggle:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
-  <!-- Login Screen -->
-  <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950">
-    <div class="w-full max-w-md mx-4">
-      <div class="text-center mb-8">
-        <div class="h-16 w-16 rounded-2xl bg-gradient-to-tr from-emerald-400 to-cyan-400 flex items-center justify-center shadow-lg shadow-emerald-500/30 mx-auto mb-4">
-          <span class="text-2xl font-black text-slate-950">ƒ</span>
-        </div>
-        <h1 class="text-2xl font-bold text-slate-50 mb-2">FlowTrack</h1>
-        <p class="text-slate-400">Sign in to access your financial dashboard</p>
-      </div>
-      
-      <div class="bg-slate-900/50 backdrop-blur-lg rounded-2xl border border-slate-800/80 p-6">
-        <form id="loginForm" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-slate-300 mb-2">Email</label>
-            <input 
-              type="email" 
-              id="loginEmail"
-              required 
-              class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-3 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-400/80"
-              placeholder="Enter your email"
-            >
+<body class="min-h-screen">
+  <div class="min-h-screen flex flex-col lg:flex-row">
+    <!-- Sidebar -->
+    <aside class="w-full lg:w-72 glass px-6 py-8 flex flex-col gap-10">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-pink-500 flex items-center justify-center text-2xl font-bold text-slate-950 shadow-lg">
+            LL
           </div>
           <div>
-            <label class="block text-sm font-medium text-slate-300 mb-2">Password</label>
-            <input 
-              type="password" 
-              id="loginPassword"
-              required 
-              class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-3 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-400/80"
-              placeholder="Enter your password"
-            >
+            <p class="text-lg font-semibold tracking-tight">Ledger Luxe</p>
+            <p class="text-xs text-slate-400 uppercase tracking-[0.3em]">Control Hub</p>
           </div>
-          <button 
-            type="submit" 
-            class="w-full bg-emerald-500 text-slate-950 font-semibold py-2.5 rounded-lg hover:bg-emerald-400 transition duration-200"
-          >
-            Sign In
-          </button>
-        </form>
-        
-        <div class="mt-6 text-center">
-          <p class="text-slate-500 text-sm">
-            Don't have an account? 
-            <button id="showRegister" class="text-emerald-400 hover:text-emerald-300 font-medium ml-1">
-              Create one
-            </button>
-          </p>
+        </div>
+        <div class="mt-6 text-sm text-slate-400 leading-relaxed">
+          Track personal and business cashflow, subscriptions, and dual budgets in one luxurious dashboard.
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- Register Screen -->
-  <div id="registerScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 hidden">
-    <div class="w-full max-w-md mx-4">
-      <div class="text-center mb-8">
-        <div class="h-16 w-16 rounded-2xl bg-gradient-to-tr from-emerald-400 to-cyan-400 flex items-center justify-center shadow-lg shadow-emerald-500/30 mx-auto mb-4">
-          <span class="text-2xl font-black text-slate-950">ƒ</span>
-        </div>
-        <h1 class="text-2xl font-bold text-slate-50 mb-2">Create Account</h1>
-        <p class="text-slate-400">Start tracking your finances</p>
-      </div>
-      
-      <div class="bg-slate-900/50 backdrop-blur-lg rounded-2xl border border-slate-800/80 p-6">
-        <form id="registerForm" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-slate-300 mb-2">Full Name</label>
-            <input 
-              type="text" 
-              id="registerName"
-              required 
-              class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-3 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-400/80"
-              placeholder="Enter your full name"
-            >
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-300 mb-2">Email</label>
-            <input 
-              type="email" 
-              id="registerEmail"
-              required 
-              class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-3 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-400/80"
-              placeholder="Enter your email"
-            >
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-slate-300 mb-2">Password</label>
-            <input 
-              type="password" 
-              id="registerPassword"
-              required 
-              class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-3 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-400/80"
-              placeholder="Create a password"
-            >
-          </div>
-          <button 
-            type="submit" 
-            class="w-full bg-emerald-500 text-slate-950 font-semibold py-2.5 rounded-lg hover:bg-emerald-400 transition duration-200"
-          >
-            Create Account
-          </button>
-        </form>
-        
-        <div class="mt-6 text-center">
-          <p class="text-slate-500 text-sm">
-            Already have an account? 
-            <button id="showLogin" class="text-emerald-400 hover:text-emerald-300 font-medium ml-1">
-              Sign in
-            </button>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main Dashboard (Hidden until login) -->
-  <div id="dashboardApp" class="hidden">
-    <div class="flex min-h-screen">
-      <!-- Sidebar -->
-      <aside id="sidebar" class="hidden md:flex md:flex-col w-64 bg-slate-950/80 border-r border-slate-800/80 backdrop-blur-xl fixed md:static inset-y-0 z-40">
-        <div class="flex items-center gap-3 px-5 pt-4 pb-3 border-b border-slate-800/80">
-          <div class="h-9 w-9 rounded-2xl bg-gradient-to-tr from-emerald-400 to-cyan-400 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-            <span class="text-xl font-black text-slate-950">ƒ</span>
-          </div>
-          <div>
-            <div class="text-sm font-semibold tracking-wide text-slate-50">FlowTrack</div>
-            <div class="text-[11px] uppercase tracking-[0.16em] text-emerald-300/80">Money Dashboard</div>
-          </div>
-        </div>
-        <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-1 text-sm">
-          <button data-section="overview" class="nav-link flex items-center gap-2 w-full px-3 py-2 rounded-lg bg-slate-900/80 text-emerald-200 shadow-sm shadow-emerald-500/20">
-            <span class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-300">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.5h16.5M3.75 9h16.5m-16.5 4.5h10.5M3.75 18h10.5" />
-              </svg>
-            </span>
-            <span class="font-medium">Overview</span>
-          </button>
-          <button data-section="expenses" class="nav-link flex items-center gap-2 w-full px-3 py-2 rounded-lg text-slate-200/80 hover:bg-slate-900/70 transition">
-            <span class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-sky-500/10 text-sky-300">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .843-3 1.875S10.343 11.75 12 11.75s3 .843 3 1.875S13.657 15.5 12 15.5m0-7.5V6m0 9.5v2M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </span>
-            <span class="font-medium">Expenses</span>
-          </button>
-          <button data-section="subscriptions" class="nav-link flex items-center gap-2 w-full px-3 py-2 rounded-lg text-slate-200/80 hover:bg-slate-900/70 transition">
-            <span class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-violet-500/10 text-violet-300">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 9.75l7.5-7.5 7.5 7.5M4.5 9.75V19.5A2.25 2.25 0 006.75 21.75h10.5A2.25 2.25 0 0019.5 19.5V9.75M8.25 21.75v-6a1.5 1.5 0 011.5-1.5h4.5a1.5 1.5 0 011.5 1.5v6" />
-              </svg>
-            </span>
-            <span class="font-medium">Subscriptions</span>
-          </button>
-          <div class="pt-4 mt-4 border-t border-slate-800/80 text-xs uppercase tracking-[0.16em] text-slate-500">Tools</div>
-          <button data-section="settings" class="nav-link flex items-center gap-2 w-full px-3 py-2 rounded-lg text-slate-200/80 hover:bg-slate-900/70 transition">
-            <span class="inline-flex h-7 w-7 items-center justify-center rounded-md bg-slate-700/50 text-slate-200">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.607 2.296.102 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </span>
-            <span class="font-medium">Settings</span>
-          </button>
-        </nav>
-        <div class="border-t border-slate-800/80 px-4 py-3 text-[11px] text-slate-500 flex items-center justify-between">
-          <span>Welcome, <span id="userNameDisplay">User</span></span>
-          <button id="logoutBtn" class="px-2 py-1 rounded-lg bg-slate-900/80 text-slate-300 hover:text-rose-300 hover:bg-rose-500/10 text-[11px] border border-slate-700/80 hover:border-rose-400/70 transition">
-            Logout
-          </button>
-        </div>
-      </aside>
-
-      <!-- Mobile top bar -->
-      <header class="md:hidden fixed top-0 inset-x-0 z-40 flex items-center justify-between bg-slate-950/95 backdrop-blur border-b border-slate-800/80 px-4 py-2.5">
-        <button id="sidebarToggle" class="inline-flex items-center justify-center h-9 w-9 rounded-lg border border-slate-800/80 bg-slate-900/80 text-slate-200">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
+      <nav class="space-y-3 text-sm font-semibold">
+        <button class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-white/5 text-white active" data-tab="overview">
+          <span>Overview</span>
+          <span class="text-xs text-emerald-300 bg-emerald-500/10 px-2 py-0.5 rounded-full">Live</span>
         </button>
-        <div class="flex items-center gap-2">
-          <div class="h-8 w-8 rounded-2xl bg-gradient-to-tr from-emerald-400 to-cyan-400 flex items-center justify-center shadow-lg shadow-emerald-500/30">
-            <span class="text-lg font-black text-slate-950">ƒ</span>
-          </div>
-          <span class="text-sm font-semibold tracking-wide">FlowTrack</span>
-        </div>
-        <div class="h-8 w-8 rounded-full bg-slate-900/80 border border-slate-700/80 flex items-center justify-center text-[11px] text-slate-400">
-          <span id="mobileUserName">U</span>
-        </div>
-      </header>
+        <button class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-white/5 transition text-slate-400" data-tab="expenses">
+          <span>Expenses</span>
+          <span class="text-xs">⌘1</span>
+        </button>
+        <button class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-white/5 transition text-slate-400" data-tab="subscriptions">
+          <span>Subscriptions</span>
+          <span class="text-xs">⌘2</span>
+        </button>
+        <button class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-white/5 transition text-slate-400" data-tab="budgets">
+          <span>Budgets</span>
+          <span class="text-xs">⌘3</span>
+        </button>
+      </nav>
 
-      <!-- Backdrop for mobile sidebar -->
-      <div id="backdrop" class="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-30 hidden"></div>
+      <div class="mt-auto text-sm text-slate-400">
+        <p class="text-slate-200 font-semibold mb-2">Storage</p>
+        <div class="flex items-center justify-between text-xs mb-3">
+          <span>Local data vault</span>
+          <span id="last-updated" class="text-slate-300">--</span>
+        </div>
+        <div class="flex gap-2">
+          <button id="reset-btn" class="flex-1 px-4 py-2 rounded-xl border border-white/10 text-xs tracking-wide uppercase text-rose-300 hover:bg-rose-500/10 transition">Reset & Seed Demo</button>
+          <button id="export-btn" class="flex-1 px-4 py-2 rounded-xl border border-white/10 text-xs tracking-wide uppercase text-blue-300 hover:bg-blue-500/10 transition">Export to Sheets</button>
+        </div>
+      </div>
+    </aside>
 
-      <!-- Main content -->
-      <main class="flex-1 flex flex-col md:ml-64">
-        <!-- Desktop top bar -->
-        <div class="hidden md:flex items-center justify-between px-7 pt-5 pb-3 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur z-20">
+    <!-- Main Content Area -->
+    <main class="flex-1 px-6 lg:px-10 py-8">
+      <!-- Overview Tab -->
+      <div id="overview" class="tab-content active space-y-10">
+        <!-- Header -->
+        <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <div class="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-slate-500">
-              <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              Live snapshot
-            </div>
-            <div class="mt-1 flex items-center gap-2 text-sm text-slate-200">
-              <span id="welcomeTitle" class="font-semibold">Good day</span>
-              <span class="h-1 w-1 rounded-full bg-slate-600"></span>
-              <span id="todayLabel"></span>
-            </div>
+            <p class="text-xs uppercase tracking-[0.4em] text-slate-400">Today · <span id="today-date">--</span></p>
+            <h1 class="text-3xl md:text-4xl font-semibold tracking-tight mt-1">Dual Budget Command Console</h1>
           </div>
           <div class="flex items-center gap-3">
-            <label class="relative inline-flex items-center gap-2 text-xs text-slate-400 bg-slate-900/80 border border-slate-800/80 rounded-full px-2.5 py-1.5">
-              <span class="hidden lg:inline">Monthly budget</span>
-              <input id="budgetInput" type="number" min="0" step="10" class="w-24 bg-transparent border-none focus:outline-none text-right text-slate-100 text-xs" />
-              <span class="text-slate-500 text-[11px]">USD</span>
-            </label>
-            <div class="hidden lg:flex items-center gap-2 text-xs text-slate-400 bg-slate-900/80 border border-slate-800/80 rounded-full px-3 py-1.5">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5.75 5.75A2.25 2.25 0 008 3.5h8a2.25 2.25 0 012.25 2.25v11A2.25 2.25 0 0116 19H8a2.25 2.25 0 01-2.25-2.25v-11z" />
-              </svg>
-              <select id="timeRange" class="bg-transparent border-none text-xs focus:outline-none">
-                <option value="month">This month</option>
-                <option value="3months">Last 3 months</option>
-                <option value="year">This year</option>
-                <option value="all">All time</option>
-              </select>
+            <div class="px-4 py-2 rounded-xl bg-white/5 text-sm">
+              Total Balance Watch · <span class="font-semibold text-emerald-300" id="total-left">$0.00</span> left
             </div>
-            <button id="quickAddBtn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-semibold shadow-lg shadow-emerald-500/40 hover:bg-emerald-400 transition">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              New expense
-            </button>
+            <button class="p-3 rounded-2xl bg-gradient-to-r from-purple-500 to-amber-400 text-slate-950 font-semibold shadow-lg shadow-amber-500/30 text-sm" id="quick-log">Quick Log</button>
           </div>
-        </div>
+        </header>
 
-        <!-- Content wrapper -->
-        <div class="pt-14 md:pt-4 pb-6 px-4 md:px-7 space-y-6 max-w-6xl mx-auto w-full">
-          <!-- Overview section -->
-          <section id="section-overview" class="space-y-6">
-            <!-- Hero -->
-            <div class="relative overflow-hidden rounded-2xl border border-slate-800/80 bg-gradient-to-br from-slate-900/90 via-slate-950 to-slate-950 px-5 sm:px-6 py-5 sm:py-6">
-              <div class="absolute -right-32 -top-32 h-56 w-56 rounded-full bg-emerald-500/10 blur-3xl"></div>
-              <div class="absolute -left-24 bottom-0 h-40 w-40 rounded-full bg-cyan-500/10 blur-3xl"></div>
-              <div class="relative flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
-                <div class="flex-1 space-y-2">
-                  <div class="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-200">
-                    <span class="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-                    <span>Smart tracking · Secure & private</span>
-                  </div>
-                  <h1 class="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight text-slate-50">
-                    Welcome to your <span class="text-emerald-300">financial dashboard</span>
-                  </h1>
-                  <p class="text-xs sm:text-sm text-slate-400 max-w-xl">
-                    Start tracking your expenses and subscriptions. Add your first expense to see your financial overview.
-                  </p>
-                </div>
-                <div class="grid grid-cols-2 gap-3 w-full md:w-auto md:min-w-[260px] text-xs">
-                  <div class="rounded-xl border border-slate-800/80 bg-slate-950/80 px-3 py-2.5">
-                    <div class="flex items-center justify-between">
-                      <span class="text-[11px] text-slate-400">This month spent</span>
-                      <span class="inline-flex h-5 px-1.5 items-center rounded-full bg-rose-500/10 text-[10px] font-medium text-rose-300">
-                        <span id="monthChangeLabel">+0%</span>
-                      </span>
-                    </div>
-                    <div class="mt-1 text-sm font-semibold text-slate-50" id="heroMonthSpent">$0</div>
-                  </div>
-                  <div class="rounded-xl border border-slate-800/80 bg-slate-950/80 px-3 py-2.5">
-                    <div class="flex items-center justify-between">
-                      <span class="text-[11px] text-slate-400">Active subs</span>
-                      <span class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-violet-500/15 text-[10px] text-violet-200">
-                        ♺
-                      </span>
-                    </div>
-                    <div class="mt-1 flex items-baseline gap-1">
-                      <span class="text-sm font-semibold text-slate-50" id="heroSubCount">0</span>
-                      <span class="text-[11px] text-slate-400">· $<span id="heroSubTotal">0</span>/mo</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+        <!-- Quick Add Section -->
+        <section class="grid gap-6 lg:grid-cols-2">
+          <!-- Quick Add Expense -->
+          <div class="glass rounded-3xl p-6 space-y-4 quick-add-form">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xl font-semibold">Quick Add Expense</h3>
+              <button class="form-toggle text-slate-400 hover:text-white p-2 rounded-xl" id="toggle-expense-form">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </button>
             </div>
+            <form id="quick-expense-form" class="space-y-4 transition-all duration-300">
+              <div class="grid gap-4 grid-cols-2">
+                <label class="flex flex-col gap-1 text-sm">
+                  <span class="text-xs text-slate-400">Description</span>
+                  <input name="description" required placeholder="Lunch, supplies..." class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rose-200">
+                </label>
+                <label class="flex flex-col gap-1 text-sm">
+                  <span class="text-xs text-slate-400">Amount</span>
+                  <input type="number" step="0.01" min="0" name="amount" required class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rose-200">
+                </label>
+              </div>
+              <div class="grid gap-4 grid-cols-2">
+                <label class="flex flex-col gap-1 text-sm">
+                  <span class="text-xs text-slate-400">Category</span>
+                  <input name="category" placeholder="Food, Office..." class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rose-200">
+                </label>
+                <label class="flex flex-col gap-1 text-sm">
+                  <span class="text-xs text-slate-400">Scope</span>
+                  <select name="scope" class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rose-200" required>
+                    <option value="personal">Personal</option>
+                    <option value="business">Business</option>
+                  </select>
+                </label>
+              </div>
+              <button type="submit" class="w-full bg-gradient-to-r from-rose-400 to-amber-300 text-slate-900 font-semibold py-2 rounded-xl text-sm shadow-lg shadow-rose-500/30">Add Expense</button>
+            </form>
+          </div>
 
-            <!-- KPI cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-              <div class="relative overflow-hidden rounded-2xl border border-emerald-500/40 bg-gradient-to-br from-emerald-500/15 via-emerald-500/5 to-slate-950 px-4 py-3.5">
-                <div class="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-emerald-400/20 blur-2xl"></div>
-                <div class="relative flex items-start justify-between gap-2">
-                  <div>
-                    <div class="text-[11px] font-medium uppercase tracking-[0.16em] text-emerald-200/90">Total spent</div>
-                    <div class="mt-1 text-lg font-semibold text-slate-50" id="metric-total-spent">$0</div>
-                    <div class="mt-0.5 text-[11px] text-emerald-200/80">Across selected range</div>
-                  </div>
-                  <div class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 4.5l-8.25 8.25L7.5 17.25V19.5h2.25l3 3 8.25-8.25-9.75-9.75z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              <div class="relative overflow-hidden rounded-2xl border border-sky-500/40 bg-gradient-to-br from-sky-500/15 via-sky-500/5 to-slate-950 px-4 py-3.5">
-                <div class="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-sky-400/20 blur-2xl"></div>
-                <div class="relative flex items-start justify-between gap-2">
-                  <div>
-                    <div class="text-[11px] font-medium uppercase tracking-[0.16em] text-sky-200/90">Average per day</div>
-                    <div class="mt-1 text-lg font-semibold text-slate-50" id="metric-avg-day">$0</div>
-                    <div class="mt-0.5 text-[11px] text-sky-200/80">For current month</div>
-                  </div>
-                  <div class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-sky-500/15 text-sky-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0A9 9 0 1112 3a9 9 0 019 9z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              <div class="relative overflow-hidden rounded-2xl border border-violet-500/40 bg-gradient-to-br from-violet-500/15 via-violet-500/5 to-slate-950 px-4 py-3.5">
-                <div class="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-violet-400/20 blur-2xl"></div>
-                <div class="relative flex items-start justify-between gap-2">
-                  <div>
-                    <div class="text-[11px] font-medium uppercase tracking-[0.16em] text-violet-200/90">Upcoming bills</div>
-                    <div class="mt-1 flex items-baseline gap-1">
-                      <span class="text-lg font-semibold text-slate-50" id="metric-upcoming-count">0</span>
-                      <span class="text-[11px] text-slate-400">within 30 days</span>
-                    </div>
-                    <div class="mt-0.5 text-[11px] text-violet-200/80">Total $<span id="metric-upcoming-total">0</span></div>
-                  </div>
-                  <div class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-violet-500/15 text-violet-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-              <div class="relative overflow-hidden rounded-2xl border border-amber-500/40 bg-gradient-to-br from-amber-500/15 via-amber-500/5 to-slate-950 px-4 py-3.5 flex items-center gap-3">
-                <div class="relative flex-1">
-                  <div class="text-[11px] font-medium uppercase tracking-[0.16em] text-amber-200/90">Budget usage</div>
-                  <div class="mt-1 flex items-baseline gap-1">
-                    <span class="text-lg font-semibold text-slate-50" id="metric-budget-used">0%</span>
-                    <span class="text-[11px] text-slate-400">of $<span id="metric-budget-total">0</span></span>
-                  </div>
-                  <div class="mt-1 h-1.5 w-full rounded-full bg-slate-900/80 overflow-hidden">
-                    <div id="metric-budget-bar" class="h-full rounded-full bg-gradient-to-r from-emerald-400 via-amber-300 to-rose-400" style="width:0%"></div>
-                  </div>
-                </div>
-                <div class="relative h-14 w-14 rounded-full bg-slate-950/80 flex items-center justify-center border border-amber-500/50">
-                  <svg class="h-10 w-10 -rotate-90">
-                    <circle cx="20" cy="20" r="16" class="stroke-slate-800" stroke-width="5" fill="transparent" />
-                    <circle id="budgetRing" cx="20" cy="20" r="16" class="stroke-amber-400" stroke-width="5" fill="transparent" stroke-linecap="round" stroke-dasharray="100" stroke-dashoffset="100" />
-                  </svg>
-                  <span class="absolute text-[11px] font-semibold" id="budgetRingLabel">0%</span>
-                </div>
-              </div>
+          <!-- Quick Budget Update -->
+          <div class="glass rounded-3xl p-6 space-y-4 quick-add-form">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xl font-semibold">Quick Budget Update</h3>
+              <button class="form-toggle text-slate-400 hover:text-white p-2 rounded-xl" id="toggle-budget-form">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </button>
             </div>
+            <form id="quick-budget-form" class="space-y-4 transition-all duration-300">
+              <div class="grid gap-4 grid-cols-2">
+                <label class="flex flex-col gap-1 text-sm">
+                  <span class="text-xs text-slate-400">Scope</span>
+                  <select name="scope" class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-200" required>
+                    <option value="personal">Personal</option>
+                    <option value="business">Business</option>
+                  </select>
+                </label>
+                <label class="flex flex-col gap-1 text-sm">
+                  <span class="text-xs text-slate-400">Amount</span>
+                  <input type="number" step="0.01" min="0" name="amount" required class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-200">
+                </label>
+              </div>
+              <button type="submit" class="w-full bg-gradient-to-r from-emerald-400 to-blue-500 text-slate-900 font-semibold py-2 rounded-xl text-sm shadow-lg shadow-emerald-500/30">Update Budget</button>
+            </form>
+          </div>
+        </section>
 
-            <!-- Charts & recent activity -->
-            <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
-              <div class="xl:col-span-2 space-y-4">
-                <div class="rounded-2xl border border-slate-800/80 bg-slate-950/80 px-4 py-3.5">
-                  <div class="flex items-center justify-between gap-2 mb-2.5">
-                    <div>
-                      <div class="text-xs font-medium text-slate-200">Spending trend</div>
-                      <div class="text-[11px] text-slate-500">Last 6 months of expenses</div>
-                    </div>
-                    <div class="flex items-center gap-2 text-[11px] text-slate-400">
-                      <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-emerald-400"></span>Expenses</span>
-                      <span class="inline-flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-sky-400"></span>Subscriptions (mo)</span>
-                    </div>
-                  </div>
-                  <div class="h-52">
-                    <canvas id="spendingChart"></canvas>
-                  </div>
-                </div>
-              </div>
-              <div class="space-y-4">
-                <div class="rounded-2xl border border-slate-800/80 bg-slate-950/80 px-4 py-3.5">
-                  <div class="flex items-center justify-between mb-2.5">
-                    <div>
-                      <div class="text-xs font-medium text-slate-200">By category</div>
-                      <div class="text-[11px] text-slate-500">Current month distribution</div>
-                    </div>
-                  </div>
-                  <div class="h-40">
-                    <canvas id="categoryChart"></canvas>
-                  </div>
-                </div>
-                <div class="rounded-2xl border border-slate-800/80 bg-slate-950/80 px-4 py-3.5">
-                  <div class="flex items-center justify-between mb-2.5">
-                    <div>
-                      <div class="text-xs font-medium text-slate-200">Today snapshot</div>
-                      <div class="text-[11px] text-slate-500">Quick look at today</div>
-                    </div>
-                    <button id="addTodayExpenseBtn" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 text-[11px] border border-slate-700/80 hover:border-emerald-400/80 hover:text-emerald-200 transition">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                      </svg>
-                      Log today
-                    </button>
-                  </div>
-                  <div class="space-y-2 text-[11px] text-slate-300">
-                    <div class="flex items-center justify-between">
-                      <span class="text-slate-400">Today spent</span>
-                      <span id="todaySpentLabel">$0</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                      <span class="text-slate-400">Transactions</span>
-                      <span id="todayCountLabel">0</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                      <span class="text-slate-400">Largest expense</span>
-                      <span id="todayLargestLabel">$0</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+        <!-- Highlights -->
+        <section class="grid gap-6 lg:grid-cols-4">
+          <div class="glass rounded-2xl p-5">
+            <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Personal Spend</p>
+            <p class="text-3xl font-semibold mt-2" id="personal-spent">$0.00</p>
+            <p class="text-emerald-300 text-sm mt-1" id="personal-count">0 entries</p>
+          </div>
+          <div class="glass rounded-2xl p-5">
+            <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Business Spend</p>
+            <p class="text-3xl font-semibold mt-2" id="business-spent">$0.00</p>
+            <p class="text-blue-300 text-sm mt-1" id="business-count">0 entries</p>
+          </div>
+          <div class="glass rounded-2xl p-5">
+            <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Subscriptions Active</p>
+            <p class="text-3xl font-semibold mt-2" id="subscription-count">0</p>
+            <p class="text-slate-300 text-sm mt-1" id="subscription-total">$0.00 / mo</p>
+          </div>
+          <div class="glass rounded-2xl p-5">
+            <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Total Burn</p>
+            <p class="text-3xl font-semibold mt-2" id="total-spent">$0.00</p>
+            <p class="text-slate-300 text-sm mt-1" id="burn-rate">—</p>
+          </div>
+        </section>
 
-            <!-- Recent expenses & subscriptions -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div class="lg:col-span-2 rounded-2xl border border-slate-800/80 bg-slate-950/80 overflow-hidden">
-                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800/80">
-                  <div>
-                    <div class="text-xs font-medium text-slate-200">Recent expenses</div>
-                    <div class="text-[11px] text-slate-500">Latest 10 entries</div>
-                  </div>
-                  <button id="openExpenseModalBtn" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 text-[11px] border border-slate-700/80 hover:border-emerald-400/80 hover:text-emerald-200 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Add expense
-                  </button>
-                </div>
-                <div class="overflow-x-auto">
-                  <table class="min-w-full text-[11px]">
-                    <thead class="bg-slate-950/90 border-b border-slate-800/80 text-slate-400">
-                      <tr>
-                        <th class="text-left font-medium px-4 py-2.5">Date</th>
-                        <th class="text-left font-medium px-2 py-2.5">Description</th>
-                        <th class="text-left font-medium px-2 py-2.5">Category</th>
-                        <th class="text-right font-medium px-2 py-2.5">Amount</th>
-                        <th class="text-left font-medium px-2 py-2.5">Method</th>
-                        <th class="text-left font-medium px-2 py-2.5">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody id="recentExpensesBody" class="divide-y divide-slate-800/80"></tbody>
-                  </table>
-                </div>
-              </div>
-              <div class="rounded-2xl border border-slate-800/80 bg-slate-950/80 overflow-hidden">
-                <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800/80">
-                  <div>
-                    <div class="text-xs font-medium text-slate-200">Active subscriptions</div>
-                    <div class="text-[11px] text-slate-500">Top recurring costs</div>
-                  </div>
-                  <button id="openSubscriptionModalBtn" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-900 text-[11px] border border-slate-700/80 hover:border-violet-400/80 hover:text-violet-200 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    Add sub
-                  </button>
-                </div>
-                <div class="max-h-64 overflow-y-auto text-[11px]">
-                  <table class="min-w-full">
-                    <thead class="bg-slate-950/90 border-b border-slate-800/80 text-slate-400">
-                      <tr>
-                        <th class="text-left font-medium px-4 py-2.5">Name</th>
-                        <th class="text-right font-medium px-2 py-2.5">Amount</th>
-                        <th class="text-left font-medium px-2 py-2.5">Cycle</th>
-                        <th class="text-left font-medium px-2 py-2.5">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody id="overviewSubsBody" class="divide-y divide-slate-800/80"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- Expenses page -->
-          <section id="section-expenses" class="space-y-4 hidden">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <!-- Budget Status -->
+        <section class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+          <div class="glass rounded-3xl p-6 space-y-6">
+            <div class="flex items-center justify-between">
               <div>
-                <div class="text-xs uppercase tracking-[0.16em] text-slate-500">Expenses</div>
-                <h2 class="text-lg font-semibold text-slate-50">All expenses</h2>
+                <p class="text-sm uppercase tracking-[0.4em] text-slate-400">Budget Inputs</p>
+                <h2 class="text-xl font-semibold">Personal vs Business allocations</h2>
               </div>
-              <div class="flex flex-wrap items-center gap-2 text-[11px]">
-                <select id="expensesCategoryFilter" class="bg-slate-950 border border-slate-800/80 rounded-lg px-2.5 py-1.5 text-slate-200">
-                  <option value="all">All categories</option>
-                </select>
-                <select id="expensesTimeFilter" class="bg-slate-950 border border-slate-800/80 rounded-lg px-2.5 py-1.5 text-slate-200">
-                  <option value="month">This month</option>
-                  <option value="3months">Last 3 months</option>
-                  <option value="year">This year</option>
-                  <option value="all">All time</option>
-                </select>
-                <button id="addExpenseFromExpenses" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-500 text-slate-950 font-medium hover:bg-emerald-400 transition">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
-                  Add expense
-                </button>
-              </div>
+              <span class="text-xs text-slate-400">Autosave on apply</span>
             </div>
-            <div class="rounded-2xl border border-slate-800/80 bg-slate-950/80 overflow-hidden">
-              <div class="overflow-x-auto max-h-[420px]">
-                <table class="min-w-full text-[11px]">
-                  <thead class="bg-slate-950/90 border-b border-slate-800/80 text-slate-400 sticky top-0 z-10">
-                    <tr>
-                      <th class="text-left font-medium px-4 py-2.5">Date</th>
-                      <th class="text-left font-medium px-2 py-2.5">Description</th>
-                      <th class="text-left font-medium px-2 py-2.5">Category</th>
-                      <th class="text-right font-medium px-2 py-2.5">Amount</th>
-                      <th class="text-left font-medium px-2 py-2.5">Payment</th>
-                      <th class="text-left font-medium px-2 py-2.5">Notes</th>
-                      <th class="text-left font-medium px-2 py-2.5">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="expensesTableBody" class="divide-y divide-slate-800/80"></tbody>
-                </table>
-              </div>
-            </div>
-          </section>
-
-          <!-- Subscriptions page -->
-          <section id="section-subscriptions" class="space-y-4 hidden">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <div class="text-xs uppercase tracking-[0.16em] text-slate-500">Subscriptions</div>
-                <h2 class="text-lg font-semibold text-slate-50">Recurring payments</h2>
-              </div>
-              <div class="flex flex-wrap items-center gap-2 text-[11px]">
-                <select id="subsStatusFilter" class="bg-slate-950 border border-slate-800/80 rounded-lg px-2.5 py-1.5 text-slate-200">
-                  <option value="active">Active</option>
-                  <option value="all">All</option>
-                  <option value="paused">Paused</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-                <button id="addSubFromSubs" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-violet-500 text-slate-950 font-medium hover:bg-violet-400 transition">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
-                  Add subscription
-                </button>
-              </div>
-            </div>
-            <div class="rounded-2xl border border-slate-800/80 bg-slate-950/80 overflow-hidden">
-              <div class="overflow-x-auto max-h-[420px]">
-                <table class="min-w-full text-[11px]">
-                  <thead class="bg-slate-950/90 border-b border-slate-800/80 text-slate-400 sticky top-0 z-10">
-                    <tr>
-                      <th class="text-left font-medium px-4 py-2.5">Name</th>
-                      <th class="text-left font-medium px-2 py-2.5">Category</th>
-                      <th class="text-right font-medium px-2 py-2.5">Amount</th>
-                      <th class="text-left font-medium px-2 py-2.5">Billing</th>
-                      <th class="text-left font-medium px-2 py-2.5">Next charge</th>
-                      <th class="text-left font-medium px-2 py-2.5">Status</th>
-                      <th class="text-left font-medium px-2 py-2.5">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody id="subsTableBody" class="divide-y divide-slate-800/80"></tbody>
-                </table>
-              </div>
-            </div>
-          </section>
-
-          <!-- Settings page -->
-          <section id="section-settings" class="space-y-4 hidden">
+            <form id="budget-form" class="grid gap-4 md:grid-cols-2">
+              <label class="flex flex-col gap-2">
+                <span class="text-sm text-slate-300">Personal Budget (USD)</span>
+                <input type="number" step="0.01" min="0" name="personalBudget" class="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-amber-300/60" required>
+              </label>
+              <label class="flex flex-col gap-2">
+                <span class="text-sm text-slate-300">Business Budget (USD)</span>
+                <input type="number" step="0.01" min="0" name="businessBudget" class="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-300/60" required>
+              </label>
+              <button type="submit" class="md:col-span-2 bg-gradient-to-r from-emerald-400 to-blue-500 text-slate-900 font-semibold py-3 rounded-2xl shadow-lg shadow-emerald-500/30">Apply Budgets</button>
+            </form>
+          </div>
+          <div class="glass rounded-3xl p-6 grid gap-6 text-sm">
             <div>
-              <div class="text-xs uppercase tracking-[0.16em] text-slate-500">Settings</div>
-              <h2 class="text-lg font-semibold text-slate-50">Account & Preferences</h2>
+              <p class="text-slate-400 uppercase tracking-[0.4em] text-xs">Status</p>
+              <h3 class="text-2xl font-semibold mt-2" id="status-balance">Calibrating…</h3>
+              <p class="text-slate-400 mt-1">Real-time health of your dual portfolio.</p>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="rounded-2xl border border-slate-800/80 bg-slate-950/80 px-4 py-3.5 space-y-3 text-sm">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <div class="font-medium text-slate-100">Account</div>
-                    <div class="text-[11px] text-slate-500">Manage your profile</div>
-                  </div>
-                  <div class="px-2 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-300" id="accountEmailDisplay">user@example.com</div>
+            <div class="space-y-4">
+              <div>
+                <div class="flex items-center justify-between text-xs uppercase mb-1 text-slate-400">
+                  <span>Personal Budget Used</span>
+                  <span id="personal-percent">0%</span>
                 </div>
-                <p class="text-[11px] text-slate-500">Your data is securely stored and associated with your account.</p>
+                <div class="w-full h-2 rounded-full bg-white/5 overflow-hidden">
+                  <div id="personal-bar" class="h-full bg-gradient-to-r from-rose-400 to-amber-300" style="width:0%"></div>
+                </div>
               </div>
-              <div class="rounded-2xl border border-slate-800/80 bg-slate-950/80 px-4 py-3.5 space-y-3 text-sm">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <div class="font-medium text-slate-100">Data Management</div>
-                    <div class="text-[11px] text-slate-500">Clear your financial data</div>
-                  </div>
-                  <button id="settingsResetBtn" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 text-[11px] border border-slate-700/80 hover:border-rose-400/80 hover:text-rose-200 transition">
-                    Clear data
-                  </button>
+              <div>
+                <div class="flex items-center justify-between text-xs uppercase mb-1 text-slate-400">
+                  <span>Business Budget Used</span>
+                  <span id="business-percent">0%</span>
                 </div>
-                <p class="text-[11px] text-slate-500">This will delete all your expenses and subscriptions. This action cannot be undone.</p>
+                <div class="w-full h-2 rounded-full bg-white/5 overflow-hidden">
+                  <div id="business-bar" class="h-full bg-gradient-to-r from-sky-400 to-emerald-300" style="width:0%"></div>
+                </div>
               </div>
             </div>
-          </section>
-        </div>
-      </main>
-    </div>
+            <div class="grid grid-cols-2 gap-4 text-center">
+              <div class="rounded-2xl bg-white/5 p-4">
+                <p class="text-slate-400 text-xs uppercase tracking-[0.3em]">Personal left</p>
+                <p class="text-xl font-semibold mt-1" id="personal-left">$0.00</p>
+              </div>
+              <div class="rounded-2xl bg-white/5 p-4">
+                <p class="text-slate-400 text-xs uppercase tracking-[0.3em]">Business left</p>
+                <p class="text-xl font-semibold mt-1" id="business-left">$0.00</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Charts -->
+        <section class="grid gap-6 xl:grid-cols-2">
+          <div class="glass rounded-3xl p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Combined Overview</p>
+                <h3 class="text-2xl font-semibold">Budget vs spent</h3>
+              </div>
+              <span class="text-xs text-slate-400">USD</span>
+            </div>
+            <div class="h-72">
+              <canvas id="combinedChart"></canvas>
+            </div>
+          </div>
+          <div class="grid gap-6">
+            <div class="glass rounded-3xl p-6">
+              <div class="flex items-center justify-between mb-6">
+                <div>
+                  <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Personal Mix</p>
+                  <h3 class="text-2xl font-semibold">Categories snapshot</h3>
+                </div>
+                <span class="text-emerald-300 text-sm" id="personal-mix-total">$0.00</span>
+              </div>
+              <div class="h-64">
+                <canvas id="personalChart"></canvas>
+              </div>
+            </div>
+            <div class="glass rounded-3xl p-6">
+              <div class="flex items-center justify-between mb-6">
+                <div>
+                  <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Business Mix</p>
+                  <h3 class="text-2xl font-semibold">Categories snapshot</h3>
+                </div>
+                <span class="text-blue-300 text-sm" id="business-mix-total">$0.00</span>
+              </div>
+              <div class="h-64">
+                <canvas id="businessChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Recent Activity -->
+        <section class="grid gap-6 lg:grid-cols-2">
+          <div class="glass rounded-3xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-2xl font-semibold">Recent Expenses</h3>
+              <span class="text-sm text-slate-400">Latest 5</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left">
+                <thead class="text-slate-400 uppercase text-xs">
+                  <tr>
+                    <th class="py-2">Item</th>
+                    <th class="py-2">Scope</th>
+                    <th class="py-2">Category</th>
+                    <th class="py-2 text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-expense-table" class="divide-y divide-white/5"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="glass rounded-3xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-2xl font-semibold">Upcoming Subscriptions</h3>
+              <span class="text-sm text-slate-400">Next 5</span>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm text-left">
+                <thead class="text-slate-400 uppercase text-xs">
+                  <tr>
+                    <th class="py-2">Service</th>
+                    <th class="py-2">Scope</th>
+                    <th class="py-2">Billing</th>
+                    <th class="py-2 text-right">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-subscription-table" class="divide-y divide-white/5"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Expenses Tab -->
+      <div id="expenses" class="tab-content space-y-10">
+        <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-xs uppercase tracking-[0.4em] text-slate-400">Expense Management</p>
+            <h1 class="text-3xl md:text-4xl font-semibold tracking-tight mt-1">Expense Ledger</h1>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="px-4 py-2 rounded-xl bg-white/5 text-sm">
+              Total Expenses · <span class="font-semibold text-rose-300" id="expenses-total">$0.00</span>
+            </div>
+          </div>
+        </header>
+
+        <section class="grid gap-6 lg:grid-cols-2">
+          <div class="glass rounded-3xl p-6 space-y-4">
+            <div>
+              <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Add Expense</p>
+              <h3 class="text-2xl font-semibold">Log personal or business cost</h3>
+            </div>
+            <form id="expense-form" class="space-y-4">
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label class="flex flex-col gap-1 text-sm">
+                  Description
+                  <input name="description" required placeholder="Dinner, ad spend…" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-rose-200">
+                </label>
+                <label class="flex flex-col gap-1 text-sm">
+                  Amount
+                  <input type="number" step="0.01" min="0" name="amount" required class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-rose-200">
+                </label>
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label class="flex flex-col gap-1 text-sm">
+                  Category
+                  <input name="category" placeholder="Food, SaaS, marketing" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-rose-200">
+                </label>
+                <label class="flex flex-col gap-1 text-sm">
+                  Scope
+                  <select name="scope" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-rose-200" required>
+                    <option value="personal">Personal</option>
+                    <option value="business">Business</option>
+                  </select>
+                </label>
+              </div>
+              <label class="flex flex-col gap-1 text-sm">
+                Date
+                <input type="date" name="date" data-today class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-rose-200" required>
+              </label>
+              <button type="submit" class="w-full bg-gradient-to-r from-rose-400 via-amber-300 to-yellow-200 text-slate-900 font-semibold py-3 rounded-2xl shadow-lg shadow-rose-500/30">Add Expense</button>
+            </form>
+          </div>
+
+          <div class="glass rounded-3xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-2xl font-semibold">All Expenses</h3>
+              <span class="text-sm text-slate-400" id="expense-count">0 entries</span>
+            </div>
+            <div class="overflow-x-auto max-h-[500px]">
+              <table class="w-full text-sm text-left">
+                <thead class="text-slate-400 uppercase text-xs sticky top-0 bg-slate-900/80 backdrop-blur">
+                  <tr>
+                    <th class="py-2">Item</th>
+                    <th class="py-2">Scope</th>
+                    <th class="py-2">Category</th>
+                    <th class="py-2 text-right">Amount</th>
+                    <th class="py-2 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="expense-table" class="divide-y divide-white/5"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Subscriptions Tab -->
+      <div id="subscriptions" class="tab-content space-y-10">
+        <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-xs uppercase tracking-[0.4em] text-slate-400">Subscription Management</p>
+            <h1 class="text-3xl md:text-4xl font-semibold tracking-tight mt-1">Subscription Deck</h1>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="px-4 py-2 rounded-xl bg-white/5 text-sm">
+              Monthly Total · <span class="font-semibold text-blue-300" id="subscriptions-total">$0.00</span>
+            </div>
+          </div>
+        </header>
+
+        <section class="grid gap-6 lg:grid-cols-2">
+          <div class="glass rounded-3xl p-6 space-y-4">
+            <div>
+              <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Add Subscription</p>
+              <h3 class="text-2xl font-semibold">Recurring tools & memberships</h3>
+            </div>
+            <form id="subscription-form" class="space-y-4">
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label class="flex flex-col gap-1 text-sm">
+                  Name
+                  <input name="name" required placeholder="Notion, Canva Pro…" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-200">
+                </label>
+                <label class="flex flex-col gap-1 text-sm">
+                  Amount
+                  <input type="number" step="0.01" min="0" name="amount" required class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-200">
+                </label>
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label class="flex flex-col gap-1 text-sm">
+                  Billing Cycle
+                  <select name="billing" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-200" required>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Quarterly">Quarterly</option>
+                    <option value="Annual">Annual</option>
+                  </select>
+                </label>
+                <label class="flex flex-col gap-1 text-sm">
+                  Scope
+                  <select name="scope" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-200" required>
+                    <option value="personal">Personal</option>
+                    <option value="business">Business</option>
+                  </select>
+                </label>
+              </div>
+              <label class="flex flex-col gap-1 text-sm">
+                Next Charge Date
+                <input type="date" name="date" data-today class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-200" required>
+              </label>
+              <button type="submit" class="w-full bg-gradient-to-r from-sky-400 via-violet-400 to-indigo-500 text-white font-semibold py-3 rounded-2xl shadow-lg shadow-sky-500/30">Add Subscription</button>
+            </form>
+          </div>
+
+          <div class="glass rounded-3xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-2xl font-semibold">All Subscriptions</h3>
+              <span class="text-sm text-slate-400" id="subscription-page-count">0 entries</span>
+            </div>
+            <div class="overflow-x-auto max-h-[500px]">
+              <table class="w-full text-sm text-left">
+                <thead class="text-slate-400 uppercase text-xs sticky top-0 bg-slate-900/80 backdrop-blur">
+                  <tr>
+                    <th class="py-2">Service</th>
+                    <th class="py-2">Scope</th>
+                    <th class="py-2">Billing</th>
+                    <th class="py-2 text-right">Amount</th>
+                    <th class="py-2 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="subscription-table" class="divide-y divide-white/5"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Budgets Tab -->
+      <div id="budgets" class="tab-content space-y-10">
+        <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-xs uppercase tracking-[0.4em] text-slate-400">Budget Management</p>
+            <h1 class="text-3xl md:text-4xl font-semibold tracking-tight mt-1">Budget Controls</h1>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="px-4 py-2 rounded-xl bg-white/5 text-sm">
+              Combined Budget · <span class="font-semibold text-emerald-300" id="combined-budget">$0.00</span>
+            </div>
+          </div>
+        </header>
+
+        <section class="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+          <div class="glass rounded-3xl p-6 space-y-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm uppercase tracking-[0.4em] text-slate-400">Budget Inputs</p>
+                <h2 class="text-xl font-semibold">Personal vs Business allocations</h2>
+              </div>
+              <span class="text-xs text-slate-400">Autosave on apply</span>
+            </div>
+            <form id="budgets-budget-form" class="grid gap-4 md:grid-cols-2">
+              <label class="flex flex-col gap-2">
+                <span class="text-sm text-slate-300">Personal Budget (USD)</span>
+                <input type="number" step="0.01" min="0" name="personalBudget" class="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-amber-300/60" required>
+              </label>
+              <label class="flex flex-col gap-2">
+                <span class="text-sm text-slate-300">Business Budget (USD)</span>
+                <input type="number" step="0.01" min="0" name="businessBudget" class="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-300/60" required>
+              </label>
+              <button type="submit" class="md:col-span-2 bg-gradient-to-r from-emerald-400 to-blue-500 text-slate-900 font-semibold py-3 rounded-2xl shadow-lg shadow-emerald-500/30">Apply Budgets</button>
+            </form>
+          </div>
+          <div class="glass rounded-3xl p-6 grid gap-6 text-sm">
+            <div>
+              <p class="text-slate-400 uppercase tracking-[0.4em] text-xs">Status</p>
+              <h3 class="text-2xl font-semibold mt-2" id="budgets-status-balance">Calibrating…</h3>
+              <p class="text-slate-400 mt-1">Real-time health of your dual portfolio.</p>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <div class="flex items-center justify-between text-xs uppercase mb-1 text-slate-400">
+                  <span>Personal Budget Used</span>
+                  <span id="budgets-personal-percent">0%</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-white/5 overflow-hidden">
+                  <div id="budgets-personal-bar" class="h-full bg-gradient-to-r from-rose-400 to-amber-300" style="width:0%"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between text-xs uppercase mb-1 text-slate-400">
+                  <span>Business Budget Used</span>
+                  <span id="budgets-business-percent">0%</span>
+                </div>
+                <div class="w-full h-2 rounded-full bg-white/5 overflow-hidden">
+                  <div id="budgets-business-bar" class="h-full bg-gradient-to-r from-sky-400 to-emerald-300" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-center">
+              <div class="rounded-2xl bg-white/5 p-4">
+                <p class="text-slate-400 text-xs uppercase tracking-[0.3em]">Personal left</p>
+                <p class="text-xl font-semibold mt-1" id="budgets-personal-left">$0.00</p>
+              </div>
+              <div class="rounded-2xl bg-white/5 p-4">
+                <p class="text-slate-400 text-xs uppercase tracking-[0.3em]">Business left</p>
+                <p class="text-xl font-semibold mt-1" id="budgets-business-left">$0.00</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="glass rounded-3xl p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Budget Analytics</p>
+              <h3 class="text-2xl font-semibold">Budget vs spent overview</h3>
+            </div>
+            <span class="text-xs text-slate-400">USD</span>
+          </div>
+          <div class="h-72">
+            <canvas id="budgets-combinedChart"></canvas>
+          </div>
+        </section>
+      </div>
+    </main>
   </div>
 
-  <!-- Expense modal -->
-  <div id="expenseModal" class="fixed inset-0 z-50 hidden items-center justify-center">
-    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
-    <div class="relative w-full max-w-md mx-3 rounded-2xl border border-slate-800/90 bg-slate-950/95 shadow-2xl shadow-emerald-500/20">
-      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800/80">
-        <div>
-          <div class="text-sm font-semibold text-slate-50">Add expense</div>
-          <div class="text-[11px] text-slate-500">Log a one-time transaction</div>
+  <!-- Google Sheets Configuration Modal -->
+  <div id="sheets-modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+    <div class="glass rounded-3xl p-8 max-w-md w-full mx-4">
+      <h3 class="text-2xl font-semibold mb-4">Google Sheets Setup</h3>
+      <p class="text-slate-400 mb-6">Enter your Google Apps Script URL to enable data export.</p>
+      <div class="space-y-4">
+        <label class="flex flex-col gap-2">
+          <span class="text-sm text-slate-300">Web App URL</span>
+          <input type="url" id="sheets-url" class="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-300" placeholder="https://script.google.com/macros/s/...">
+        </label>
+        <div class="text-xs text-slate-500">
+          <p>To set this up:</p>
+          <ol class="list-decimal pl-5 mt-2 space-y-1">
+            <li>Create a Google Apps Script</li>
+            <li>Deploy it as a web app</li>
+            <li>Set access to "Anyone"</li>
+            <li>Paste the URL here</li>
+          </ol>
         </div>
-        <button data-close-modal="expenseModal" class="h-7 w-7 inline-flex items-center justify-center rounded-lg bg-slate-900/80 text-slate-400 hover:text-slate-100">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
       </div>
-      <form id="expenseForm" class="px-4 py-3 space-y-3 text-[13px]">
-        <div class="flex gap-2">
-          <label class="flex-1 text-xs text-slate-300 space-y-1">
-            <span>Description</span>
-            <input required id="expenseDescription" type="text" placeholder="Groceries, Uber, etc." class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-2.5 py-1.5 text-[13px] text-slate-100 focus:outline-none focus:border-emerald-400/80" />
-          </label>
-          <label class="w-28 text-xs text-slate-300 space-y-1">
-            <span>Amount</span>
-            <input required id="expenseAmount" type="number" min="0" step="0.01" class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-2.5 py-1.5 text-[13px] text-slate-100 focus:outline-none focus:border-emerald-400/80" />
-          </label>
-        </div>
-        <div class="flex gap-2">
-          <label class="w-32 text-xs text-slate-300 space-y-1">
-            <span>Date</span>
-            <input required id="expenseDate" type="date" class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-2.5 py-1.5 text-[13px] text-slate-100 focus:outline-none focus:border-emerald-400/80" />
-          </label>
-          <label class="flex-1 text-xs text-slate-300 space-y-1">
-            <span>Category</span>
-            <select id="expenseCategory" class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-2.5 py-1.5 text-[13px] text-slate-100 focus:outline-none focus:border-emerald-400/80">
-              <option>General</option>
-              <option>Food</option>
-              <option>Transport</option>
-              <option>Housing</option>
-              <option>Shopping</option>
-              <option>Entertainment</option>
-              <option>Health</option>
-              <option>Travel</option>
-            </select>
-          </label>
-        </div>
-        <div class="flex gap-2">
-          <label class="w-32 text-xs text-slate-300 space-y-1">
-            <span>Method</span>
-            <select id="expenseMethod" class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-2.5 py-1.5 text-[13px] text-slate-100 focus:outline-none focus:border-emerald-400/80">
-              <option>Card</option>
-              <option>Cash</option>
-              <option>Bank transfer</option>
-              <option>Wallet</option>
-            </select>
-          </label>
-          <label class="flex-1 text-xs text-slate-300 space-y-1">
-            <span>Notes (optional)</span>
-            <input id="expenseNotes" type="text" placeholder="Tags, extra details" class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-2.5 py-1.5 text-[13px] text-slate-100 focus:outline-none focus:border-emerald-400/80" />
-          </label>
-        </div>
-        <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 mt-2">
-          <span class="text-[11px] text-slate-500">You can edit or remove this later.</span>
-          <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 text-xs font-semibold hover:bg-emerald-400 transition">
-            Save expense
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Subscription modal -->
-  <div id="subscriptionModal" class="fixed inset-0 z-50 hidden items-center justify-center">
-    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
-    <div class="relative w-full max-w-md mx-3 rounded-2xl border border-slate-800/90 bg-slate-950/95 shadow-2xl shadow-violet-500/20">
-      <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800/80">
-        <div>
-          <div class="text-sm font-semibold text-slate-50">Add subscription</div>
-          <div class="text-[11px] text-slate-500">Track recurring payments</div>
-        </div>
-        <button data-close-modal="subscriptionModal" class="h-7 w-7 inline-flex items-center justify-center rounded-lg bg-slate-900/80 text-slate-400 hover:text-slate-100">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+      <div class="flex gap-3 mt-6">
+        <button id="save-sheets" class="flex-1 bg-gradient-to-r from-blue-400 to-indigo-500 text-white font-semibold py-3 rounded-2xl">Save URL</button>
+        <button id="close-sheets" class="flex-1 bg-white/10 text-slate-300 font-semibold py-3 rounded-2xl">Cancel</button>
       </div>
-      <form id="subscriptionForm" class="px-4 py-3 space-y-3 text-[13px]">
-        <div class="flex gap-2">
-          <label class="flex-1 text-xs text-slate-300 space-y-1">
-            <span>Name</span>
-            <input required id="subName" type="text" placeholder="Netflix, Spotify, Rent" class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-2.5 py-1.5 text-[13px] text-slate-100 focus:outline-none focus:border-violet-400/80" />
-          </label>
-          <label class="w-28 text-xs text-slate-300 space-y-1">
-            <span>Amount</span>
-            <input required id="subAmount" type="number" min="0" step="0.01" class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-2.5 py-1.5 text-[13px] text-slate-100 focus:outline-none focus:border-violet-400/80" />
-          </label>
-        </div>
-        <div class="flex gap-2">
-          <label class="flex-1 text-xs text-slate-300 space-y-1">
-            <span>Category</span>
-            <select id="subCategory" class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-2.5 py-1.5 text-[13px] text-slate-100 focus:outline-none focus:border-violet-400/80">
-              <option>Streaming</option>
-              <option>Productivity</option>
-              <option>Music</option>
-              <option>Cloud</option>
-              <option>Utilities</option>
-              <option>Rent</option>
-              <option>Other</option>
-            </select>
-          </label>
-          <label class="w-32 text-xs text-slate-300 space-y-1">
-            <span>Billing cycle</span>
-            <select id="subBilling" class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-2.5 py-1.5 text-[13px] text-slate-100 focus:outline-none focus:border-violet-400/80">
-              <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
-              <option value="weekly">Weekly</option>
-            </select>
-          </label>
-        </div>
-        <div class="flex gap-2">
-          <label class="w-32 text-xs text-slate-300 space-y-1">
-            <span>Next charge</span>
-            <input required id="subNext" type="date" class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-2.5 py-1.5 text-[13px] text-slate-100 focus:outline-none focus:border-violet-400/80" />
-          </label>
-          <label class="flex-1 text-xs text-slate-300 space-y-1">
-            <span>Status</span>
-            <select id="subStatus" class="w-full rounded-lg border border-slate-700/80 bg-slate-950/80 px-2.5 py-1.5 text-[13px] text-slate-100 focus:outline-none focus:border-violet-400/80">
-              <option value="active">Active</option>
-              <option value="paused">Paused</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-          </label>
-        </div>
-        <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 mt-2">
-          <span class="text-[11px] text-slate-500">We estimate monthly cost from the billing cycle.</span>
-          <button type="submit" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-500 text-slate-950 text-xs font-semibold hover:bg-violet-400 transition">
-            Save subscription
-          </button>
-        </div>
-      </form>
     </div>
   </div>
 
   <script>
-    // User Authentication System
-    const USER_STORAGE_KEY = 'flowtrack-users';
-    const CURRENT_USER_KEY = 'flowtrack-current-user';
-
-    // Basic utilities
-    const formatCurrency = (value) => {
-      if (!isFinite(value)) return '$0';
-      return '$' + value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    const STORAGE_KEY = 'ledger_luxe_dual_budget_v4';
+    const SHEETS_URL_KEY = 'ledger_luxe_sheets_url';
+    
+    const stateDefaults = {
+      budgets: {
+        personal: 2500,
+        business: 4200
+      },
+      expenses: [
+        { id: 1, description: 'Private chef tasting', amount: 280, category: 'Dining', scope: 'personal', date: new Date().toISOString() },
+        { id: 2, description: 'Paid ads burst', amount: 950, category: 'Marketing', scope: 'business', date: new Date().toISOString() },
+        { id: 3, description: 'Wellness membership', amount: 190, category: 'Health', scope: 'personal', date: new Date().toISOString() },
+        { id: 4, description: 'Designer retainer', amount: 740, category: 'Creative', scope: 'business', date: new Date().toISOString() }
+      ],
+      subscriptions: [
+        { id: 101, name: 'Canva Pro', amount: 14.99, billing: 'Monthly', scope: 'business', date: new Date().toISOString() },
+        { id: 102, name: 'Headspace', amount: 12.99, billing: 'Monthly', scope: 'personal', date: new Date().toISOString() },
+        { id: 103, name: 'Figma Organization', amount: 45, billing: 'Monthly', scope: 'business', date: new Date().toISOString() }
+      ]
     };
 
-    const todayISO = () => new Date().toISOString().slice(0, 10);
+    let state = structuredClone(stateDefaults);
+    let combinedChart, personalChart, businessChart, budgetsCombinedChart;
+    let sheetsUrl = localStorage.getItem(SHEETS_URL_KEY) || '';
 
-    // User management functions
-    function getUsers() {
-      const raw = localStorage.getItem(USER_STORAGE_KEY);
-      return raw ? JSON.parse(raw) : {};
+    const formatCurrency = (val) => val.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
     }
 
-    function saveUsers(users) {
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(users));
-    }
-
-    function getCurrentUser() {
-      return localStorage.getItem(CURRENT_USER_KEY);
-    }
-
-    function setCurrentUser(email) {
-      if (email) {
-        localStorage.setItem(CURRENT_USER_KEY, email);
+    function loadState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        state = JSON.parse(saved);
       } else {
-        localStorage.removeItem(CURRENT_USER_KEY);
+        state = structuredClone(stateDefaults);
       }
     }
 
-    function getUserData(email) {
-      const users = getUsers();
-      return users[email] || { expenses: [], subscriptions: [], budget: 0, name: '' };
+    function getScopeTotals(scope) {
+      const expenseTotal = state.expenses.filter(e => e.scope === scope).reduce((sum, e) => sum + Number(e.amount), 0);
+      const subTotal = state.subscriptions.filter(s => s.scope === scope).reduce((sum, s) => sum + Number(s.amount), 0);
+      return expenseTotal + subTotal;
     }
 
-    function saveUserData(email, data) {
-      const users = getUsers();
-      users[email] = data;
-      saveUsers(users);
+    function renderHighlights() {
+      const personalSpent = getScopeTotals('personal');
+      const businessSpent = getScopeTotals('business');
+      const totalSpent = personalSpent + businessSpent;
+      const personalEntries = state.expenses.filter(e => e.scope === 'personal').length + state.subscriptions.filter(s => s.scope === 'personal').length;
+      const businessEntries = state.expenses.filter(e => e.scope === 'business').length + state.subscriptions.filter(s => s.scope === 'business').length;
+
+      document.getElementById('personal-spent').textContent = formatCurrency(personalSpent);
+      document.getElementById('business-spent').textContent = formatCurrency(businessSpent);
+      document.getElementById('total-spent').textContent = formatCurrency(totalSpent);
+      document.getElementById('personal-count').textContent = `${personalEntries} entries`;
+      document.getElementById('business-count').textContent = `${businessEntries} entries`;
+      document.getElementById('subscription-count').textContent = state.subscriptions.length;
+      const monthlySubs = state.subscriptions.reduce((sum, s) => sum + Number(s.amount), 0);
+      document.getElementById('subscription-total').textContent = `${formatCurrency(monthlySubs)} / cycle`;
+      document.getElementById('burn-rate').textContent = `${(totalSpent / (state.expenses.length + state.subscriptions.length || 1)).toFixed(2)} avg txn`;
+
+      const personalPercent = state.budgets.personal ? Math.min((personalSpent / state.budgets.personal) * 100, 200) : 0;
+      const businessPercent = state.budgets.business ? Math.min((businessSpent / state.budgets.business) * 100, 200) : 0;
+      document.getElementById('personal-percent').textContent = `${personalPercent.toFixed(1)}%`;
+      document.getElementById('business-percent').textContent = `${businessPercent.toFixed(1)}%`;
+      document.getElementById('personal-bar').style.width = `${personalPercent}%`;
+      document.getElementById('business-bar').style.width = `${businessPercent}%`;
+      document.getElementById('personal-left').textContent = formatCurrency(Math.max(state.budgets.personal - personalSpent, 0));
+      document.getElementById('business-left').textContent = formatCurrency(Math.max(state.budgets.business - businessSpent, 0));
+      document.getElementById('total-left').textContent = formatCurrency(Math.max((state.budgets.personal + state.budgets.business) - totalSpent, 0));
+      document.getElementById('status-balance').textContent = totalSpent > (state.budgets.personal + state.budgets.business) ? 'Overbudget – adjust now' : 'Healthy cash runway';
+
+      // Update budget page elements
+      document.getElementById('budgets-personal-percent').textContent = `${personalPercent.toFixed(1)}%`;
+      document.getElementById('budgets-business-percent').textContent = `${businessPercent.toFixed(1)}%`;
+      document.getElementById('budgets-personal-bar').style.width = `${personalPercent}%`;
+      document.getElementById('budgets-business-bar').style.width = `${businessPercent}%`;
+      document.getElementById('budgets-personal-left').textContent = formatCurrency(Math.max(state.budgets.personal - personalSpent, 0));
+      document.getElementById('budgets-business-left').textContent = formatCurrency(Math.max(state.budgets.business - businessSpent, 0));
+      document.getElementById('budgets-status-balance').textContent = totalSpent > (state.budgets.personal + state.budgets.business) ? 'Overbudget – adjust now' : 'Healthy cash runway';
+      document.getElementById('combined-budget').textContent = formatCurrency(state.budgets.personal + state.budgets.business);
     }
 
-    function seedEmptyData() {
-      return { expenses: [], subscriptions: [], budget: 0, name: '' };
+    function renderTables() {
+      // Recent expenses table (overview)
+      const recentExpenseBody = document.getElementById('recent-expense-table');
+      const recentExpenseRows = [...state.expenses]
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 5)
+        .map(item => `
+          <tr>
+            <td class="py-3">
+              <p class="font-semibold">${item.description}</p>
+              <p class="text-xs text-slate-400">${new Date(item.date).toLocaleDateString()}</p>
+            </td>
+            <td class="py-3">
+              <span class="px-2.5 py-1 rounded-full text-xs ${item.scope === 'personal' ? 'bg-rose-500/10 text-rose-200' : 'bg-sky-500/10 text-sky-200'}">${item.scope}</span>
+            </td>
+            <td class="py-3 text-slate-300">${item.category || '—'}</td>
+            <td class="py-3 text-right font-semibold">${formatCurrency(Number(item.amount))}</td>
+          </tr>
+        `).join('');
+      recentExpenseBody.innerHTML = recentExpenseRows || '<tr><td class="py-4 text-center text-slate-500" colspan="4">No expenses logged yet.</td></tr>';
+
+      // Recent subscriptions table (overview)
+      const recentSubBody = document.getElementById('recent-subscription-table');
+      const recentSubRows = [...state.subscriptions]
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .slice(0, 5)
+        .map(item => `
+          <tr>
+            <td class="py-3">
+              <p class="font-semibold">${item.name}</p>
+              <p class="text-xs text-slate-400">Next · ${new Date(item.date).toLocaleDateString()}</p>
+            </td>
+            <td class="py-3">
+              <span class="px-2.5 py-1 rounded-full text-xs ${item.scope === 'personal' ? 'bg-emerald-500/10 text-emerald-200' : 'bg-indigo-500/10 text-indigo-200'}">${item.scope}</span>
+            </td>
+            <td class="py-3 text-slate-300">${item.billing}</td>
+            <td class="py-3 text-right font-semibold">${formatCurrency(Number(item.amount))}</td>
+          </tr>
+        `).join('');
+      recentSubBody.innerHTML = recentSubRows || '<tr><td class="py-4 text-center text-slate-500" colspan="4">No subscriptions on file.</td></tr>';
+
+      // Full expense table (expenses page)
+      const expenseBody = document.getElementById('expense-table');
+      const expenseRows = [...state.expenses]
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .map(item => `
+          <tr>
+            <td class="py-3">
+              <p class="font-semibold">${item.description}</p>
+              <p class="text-xs text-slate-400">${new Date(item.date).toLocaleDateString()}</p>
+            </td>
+            <td class="py-3">
+              <span class="px-2.5 py-1 rounded-full text-xs ${item.scope === 'personal' ? 'bg-rose-500/10 text-rose-200' : 'bg-sky-500/10 text-sky-200'}">${item.scope}</span>
+            </td>
+            <td class="py-3 text-slate-300">${item.category || '—'}</td>
+            <td class="py-3 text-right font-semibold">${formatCurrency(Number(item.amount))}</td>
+            <td class="py-3 text-right">
+              <button class="delete-btn text-rose-400 hover:text-rose-300 transition" data-id="${item.id}" data-type="expense">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      expenseBody.innerHTML = expenseRows || '<tr><td class="py-4 text-center text-slate-500" colspan="5">No expenses logged yet.</td></tr>';
+      document.getElementById('expense-count').textContent = `${state.expenses.length} entries`;
+      document.getElementById('expenses-total').textContent = formatCurrency(state.expenses.reduce((sum, e) => sum + Number(e.amount), 0));
+
+      // Full subscription table (subscriptions page)
+      const subBody = document.getElementById('subscription-table');
+      const subRows = [...state.subscriptions]
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .map(item => `
+          <tr>
+            <td class="py-3">
+              <p class="font-semibold">${item.name}</p>
+              <p class="text-xs text-slate-400">Next · ${new Date(item.date).toLocaleDateString()}</p>
+            </td>
+            <td class="py-3">
+              <span class="px-2.5 py-1 rounded-full text-xs ${item.scope === 'personal' ? 'bg-emerald-500/10 text-emerald-200' : 'bg-indigo-500/10 text-indigo-200'}">${item.scope}</span>
+            </td>
+            <td class="py-3 text-slate-300">${item.billing}</td>
+            <td class="py-3 text-right font-semibold">${formatCurrency(Number(item.amount))}</td>
+            <td class="py-3 text-right">
+              <button class="delete-btn text-rose-400 hover:text-rose-300 transition" data-id="${item.id}" data-type="subscription">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      subBody.innerHTML = subRows || '<tr><td class="py-4 text-center text-slate-500" colspan="5">No subscriptions on file.</td></tr>';
+      document.getElementById('subscription-page-count').textContent = `${state.subscriptions.length} entries`;
+      document.getElementById('subscriptions-total').textContent = formatCurrency(state.subscriptions.reduce((sum, s) => sum + Number(s.amount), 0));
     }
 
-    let state = seedEmptyData();
-    let currentUserEmail = '';
-
-    // Login/Register System
-    function initAuth() {
-      const loginScreen = document.getElementById('loginScreen');
-      const registerScreen = document.getElementById('registerScreen');
-      const dashboardApp = document.getElementById('dashboardApp');
-      
-      const loginForm = document.getElementById('loginForm');
-      const registerForm = document.getElementById('registerForm');
-      const showRegisterBtn = document.getElementById('showRegister');
-      const showLoginBtn = document.getElementById('showLogin');
-      const logoutBtn = document.getElementById('logoutBtn');
-
-      // Check if user is already logged in
-      const savedUser = getCurrentUser();
-      if (savedUser) {
-        loginUser(savedUser);
-        return;
+    function aggregateCategories(scope) {
+      const bucket = {};
+      state.expenses.filter(e => e.scope === scope).forEach(e => {
+        const key = e.category || 'Uncategorized';
+        bucket[key] = (bucket[key] || 0) + Number(e.amount);
+      });
+      state.subscriptions.filter(s => s.scope === scope).forEach(s => {
+        const key = `${s.category || s.name}`;
+        bucket[key] = (bucket[key] || 0) + Number(s.amount);
+      });
+      const entries = Object.entries(bucket);
+      if (!entries.length) {
+        return { labels: ['No data'], values: [1] };
       }
-
-      // Show login screen by default
-      loginScreen.classList.remove('hidden');
-      registerScreen.classList.add('hidden');
-      dashboardApp.classList.add('hidden');
-
-      // Login form handler
-      loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
-        
-        const users = getUsers();
-        if (users[email] && users[email].password === password) {
-          loginUser(email);
-        } else {
-          alert('Invalid email or password');
-        }
-      });
-
-      // Register form handler
-      registerForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = document.getElementById('registerName').value;
-        const email = document.getElementById('registerEmail').value;
-        const password = document.getElementById('registerPassword').value;
-        
-        const users = getUsers();
-        if (users[email]) {
-          alert('User already exists with this email');
-          return;
-        }
-        
-        // Create new user
-        users[email] = {
-          ...seedEmptyData(),
-          name: name,
-          password: password
-        };
-        saveUsers(users);
-        
-        loginUser(email);
-      });
-
-      // Switch between login and register
-      showRegisterBtn.addEventListener('click', () => {
-        loginScreen.classList.add('hidden');
-        registerScreen.classList.remove('hidden');
-      });
-
-      showLoginBtn.addEventListener('click', () => {
-        registerScreen.classList.add('hidden');
-        loginScreen.classList.remove('hidden');
-      });
-
-      // Logout handler
-      logoutBtn.addEventListener('click', () => {
-        setCurrentUser(null);
-        loginScreen.classList.remove('hidden');
-        dashboardApp.classList.add('hidden');
-        registerScreen.classList.add('hidden');
-        
-        // Reset forms
-        loginForm.reset();
-        registerForm.reset();
-      });
-    }
-
-    function loginUser(email) {
-      currentUserEmail = email;
-      setCurrentUser(email);
-      
-      // Load user data
-      state = getUserData(email);
-      
-      // Update UI
-      document.getElementById('loginScreen').classList.add('hidden');
-      document.getElementById('registerScreen').classList.add('hidden');
-      document.getElementById('dashboardApp').classList.remove('hidden');
-      
-      // Update user display
-      document.getElementById('userNameDisplay').textContent = state.name || 'User';
-      document.getElementById('mobileUserName').textContent = (state.name || 'U').charAt(0).toUpperCase();
-      document.getElementById('accountEmailDisplay').textContent = email;
-      
-      // Initialize dashboard
-      populateCategoryFilter();
-      initCharts();
-      renderWelcome();
-      renderAll();
-    }
-
-    // Navigation
-    function initNavigation() {
-      const links = document.querySelectorAll('.nav-link');
-      const sections = {
-        overview: document.getElementById('section-overview'),
-        expenses: document.getElementById('section-expenses'),
-        subscriptions: document.getElementById('section-subscriptions'),
-        settings: document.getElementById('section-settings'),
-      };
-
-      links.forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const target = btn.dataset.section;
-          if (!target) return;
-          links.forEach((b) => b.classList.remove('bg-slate-900/80', 'text-emerald-200', 'shadow-sm', 'shadow-emerald-500/20'));
-          links[0].classList.remove('bg-slate-900/80', 'text-emerald-200', 'shadow-sm', 'shadow-emerald-500/20');
-          btn.classList.add('bg-slate-900/80', 'text-emerald-200', 'shadow-sm', 'shadow-emerald-500/20');
-
-          Object.values(sections).forEach((sec) => sec.classList.add('hidden'));
-          sections[target].classList.remove('hidden');
-        });
-      });
-    }
-
-    // Sidebar mobile
-    function initSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const toggle = document.getElementById('sidebarToggle');
-      const backdrop = document.getElementById('backdrop');
-
-      function open() {
-        sidebar.classList.remove('hidden');
-        backdrop.classList.remove('hidden');
-      }
-      function close() {
-        sidebar.classList.add('hidden');
-        backdrop.classList.add('hidden');
-      }
-
-      toggle.addEventListener('click', open);
-      backdrop.addEventListener('click', close);
-    }
-
-    // Charts
-    let spendingChart, categoryChart;
-
-    function getMonthLabel(date) {
-      return date.toLocaleString(undefined, { month: 'short' });
-    }
-
-    function monthKey(date) { return date.getFullYear() + '-' + (date.getMonth() + 1); }
-
-    function getMonthlyData() {
-      const now = new Date();
-      const months = [];
-      for (let i = 5; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        months.push({ key: monthKey(d), label: getMonthLabel(d) });
-      }
-
-      const expensesMap = new Map();
-      const subsMap = new Map();
-      months.forEach((m) => { expensesMap.set(m.key, 0); subsMap.set(m.key, 0); });
-
-      state.expenses.forEach((e) => {
-        const d = new Date(e.date);
-        const k = monthKey(d);
-        if (expensesMap.has(k)) {
-          expensesMap.set(k, expensesMap.get(k) + Number(e.amount || 0));
-        }
-      });
-
-      state.subscriptions.forEach((s) => {
-        if (s.status !== 'active') return;
-        const next = new Date(s.next);
-        const k = monthKey(next);
-        let monthly = Number(s.amount || 0);
-        if (s.billing === 'yearly') monthly = monthly / 12;
-        if (s.billing === 'weekly') monthly = monthly * 4.345; // approx
-        if (subsMap.has(k)) subsMap.set(k, subsMap.get(k) + monthly);
-      });
-
       return {
-        labels: months.map((m) => m.label),
-        expenses: months.map((m) => expensesMap.get(m.key)),
-        subs: months.map((m) => subsMap.get(m.key)),
+        labels: entries.map(([label]) => label),
+        values: entries.map(([, value]) => value)
       };
-    }
-
-    function getCategoryDataCurrentMonth() {
-      const now = new Date();
-      const m = now.getMonth();
-      const y = now.getFullYear();
-      const map = new Map();
-
-      state.expenses.forEach((e) => {
-        const d = new Date(e.date);
-        if (d.getMonth() === m && d.getFullYear() === y) {
-          const key = e.category || 'Other';
-          map.set(key, (map.get(key) || 0) + Number(e.amount || 0));
-        }
-      });
-
-      state.subscriptions.forEach((s) => {
-        if (s.status !== 'active') return;
-        const next = new Date(s.next);
-        if (next.getMonth() === m && next.getFullYear() === y) {
-          let monthly = Number(s.amount || 0);
-          if (s.billing === 'yearly') monthly = monthly / 12;
-          if (s.billing === 'weekly') monthly = monthly * 4.345;
-          const key = s.category || 'Other';
-          map.set(key, (map.get(key) || 0) + monthly);
-        }
-      });
-
-      const labels = Array.from(map.keys());
-      const data = Array.from(map.values());
-      return { labels, data };
     }
 
     function initCharts() {
-      const ctx1 = document.getElementById('spendingChart').getContext('2d');
-      const ctx2 = document.getElementById('categoryChart').getContext('2d');
+      const combinedCtx = document.getElementById('combinedChart').getContext('2d');
+      const personalCtx = document.getElementById('personalChart').getContext('2d');
+      const businessCtx = document.getElementById('businessChart').getContext('2d');
+      const budgetsCombinedCtx = document.getElementById('budgets-combinedChart').getContext('2d');
 
-      const monthly = getMonthlyData();
-
-      spendingChart = new Chart(ctx1, {
-        type: 'line',
+      combinedChart = new Chart(combinedCtx, {
+        type: 'bar',
         data: {
-          labels: monthly.labels,
+          labels: ['Personal', 'Business'],
           datasets: [
             {
-              label: 'Expenses',
-              data: monthly.expenses,
-              borderColor: 'rgb(52, 211, 153)',
-              backgroundColor: 'rgba(16, 185, 129, 0.18)',
-              tension: 0.4,
-              fill: true,
-              borderWidth: 2,
-              pointRadius: 3,
-              pointBackgroundColor: 'rgb(16, 185, 129)',
+              label: 'Budget',
+              data: [state.budgets.personal, state.budgets.business],
+              backgroundColor: ['rgba(244, 114, 182, 0.3)', 'rgba(96, 165, 250, 0.3)'],
+              borderColor: ['rgba(244, 114, 182, 1)', 'rgba(96, 165, 250, 1)'],
+              borderWidth: 2
             },
             {
-              label: 'Subscriptions (mo)',
-              data: monthly.subs,
-              borderColor: 'rgb(56, 189, 248)',
-              backgroundColor: 'rgba(56, 189, 248, 0.16)',
-              tension: 0.4,
-              fill: true,
-              borderWidth: 2,
-              pointRadius: 3,
-              pointBackgroundColor: 'rgb(56, 189, 248)',
+              label: 'Spent',
+              data: [getScopeTotals('personal'), getScopeTotals('business')],
+              backgroundColor: ['rgba(248, 250, 252, 0.9)', 'rgba(248, 250, 252, 0.9)'],
+              borderRadius: 6
             },
-          ],
+            {
+              label: 'Remaining',
+              data: [Math.max(state.budgets.personal - getScopeTotals('personal'), 0), Math.max(state.budgets.business - getScopeTotals('business'), 0)],
+              backgroundColor: ['rgba(16, 185, 129, 0.4)', 'rgba(34, 197, 94, 0.4)']
+            }
+          ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: 'rgb(15, 23, 42)',
-              borderColor: 'rgb(51, 65, 85)',
-              borderWidth: 1,
-              padding: 10,
-              displayColors: true,
-              callbacks: {
-                label: (ctx) => `${ctx.dataset.label}: ${formatCurrency(ctx.parsed.y || 0)}`,
-              },
-            },
+            legend: {
+              labels: { color: '#cbd5f5' }
+            }
           },
           scales: {
             x: {
-              grid: { color: 'rgba(30, 41, 59, 0.7)' },
-              ticks: { color: 'rgb(148, 163, 184)', font: { size: 10 } },
+              ticks: { color: '#94a3b8' },
+              grid: { display: false }
             },
             y: {
-              grid: { color: 'rgba(30, 41, 59, 0.8)' },
               ticks: {
-                color: 'rgb(148, 163, 184)', font: { size: 10 },
-                callback: (v) => '$' + v,
+                color: '#94a3b8',
+                callback: value => '$' + value
               },
-            },
-          },
-        },
+              grid: { color: 'rgba(148, 163, 184, 0.2)' }
+            }
+          }
+        }
       });
 
-      const cat = getCategoryDataCurrentMonth();
-      categoryChart = new Chart(ctx2, {
-        type: 'doughnut',
+      budgetsCombinedChart = new Chart(budgetsCombinedCtx, {
+        type: 'bar',
         data: {
-          labels: cat.labels,
+          labels: ['Personal', 'Business'],
           datasets: [
             {
-              data: cat.data,
-              backgroundColor: [
-                'rgba(16, 185, 129, 0.75)',
-                'rgba(56, 189, 248, 0.75)',
-                'rgba(129, 140, 248, 0.75)',
-                'rgba(251, 146, 60, 0.75)',
-                'rgba(244, 114, 182, 0.75)',
-                'rgba(52, 211, 153, 0.7)',
-                'rgba(96, 165, 250, 0.75)',
-              ],
-              borderWidth: 0,
+              label: 'Budget',
+              data: [state.budgets.personal, state.budgets.business],
+              backgroundColor: ['rgba(244, 114, 182, 0.3)', 'rgba(96, 165, 250, 0.3)'],
+              borderColor: ['rgba(244, 114, 182, 1)', 'rgba(96, 165, 250, 1)'],
+              borderWidth: 2
             },
-          ],
+            {
+              label: 'Spent',
+              data: [getScopeTotals('personal'), getScopeTotals('business')],
+              backgroundColor: ['rgba(248, 250, 252, 0.9)', 'rgba(248, 250, 252, 0.9)'],
+              borderRadius: 6
+            },
+            {
+              label: 'Remaining',
+              data: [Math.max(state.budgets.personal - getScopeTotals('personal'), 0), Math.max(state.budgets.business - getScopeTotals('business'), 0)],
+              backgroundColor: ['rgba(16, 185, 129, 0.4)', 'rgba(34, 197, 94, 0.4)']
+            }
+          ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: 'rgb(15, 23, 42)',
-              borderColor: 'rgb(51, 65, 85)',
-              borderWidth: 1,
-              padding: 8,
-              callbacks: {
-                label: (ctx) => `${ctx.label}: ${formatCurrency(ctx.parsed || 0)}`,
-              },
-            },
+            legend: {
+              labels: { color: '#cbd5f5' }
+            }
           },
+          scales: {
+            x: {
+              ticks: { color: '#94a3b8' },
+              grid: { display: false }
+            },
+            y: {
+              ticks: {
+                color: '#94a3b8',
+                callback: value => '$' + value
+              },
+              grid: { color: 'rgba(148, 163, 184, 0.2)' }
+            }
+          }
+        }
+      });
+
+      const personalData = aggregateCategories('personal');
+      personalChart = new Chart(personalCtx, {
+        type: 'doughnut',
+        data: {
+          labels: personalData.labels,
+          datasets: [{
+            data: personalData.values,
+            backgroundColor: personalData.labels.map((_, idx) => `hsla(${idx * 40}, 90%, 70%, 0.9)`),
+            borderColor: '#0f172a'
+          }]
         },
+        options: {
+          plugins: {
+            legend: { labels: { color: '#cbd5f5', boxWidth: 12 } }
+          }
+        }
+      });
+
+      const businessData = aggregateCategories('business');
+      businessChart = new Chart(businessCtx, {
+        type: 'doughnut',
+        data: {
+          labels: businessData.labels,
+          datasets: [{
+            data: businessData.values,
+            backgroundColor: businessData.labels.map((_, idx) => `hsla(${idx * 50 + 180}, 80%, 65%, 0.9)`),
+            borderColor: '#0f172a'
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { labels: { color: '#cbd5f5', boxWidth: 12 } }
+          }
+        }
       });
     }
 
-    function refreshCharts() {
-      if (!spendingChart || !categoryChart) return;
-      const monthly = getMonthlyData();
-      spendingChart.data.labels = monthly.labels;
-      spendingChart.data.datasets[0].data = monthly.expenses;
-      spendingChart.data.datasets[1].data = monthly.subs;
-      spendingChart.update();
+    function updateCharts() {
+      if (!combinedChart) return;
+      combinedChart.data.datasets[0].data = [state.budgets.personal, state.budgets.business];
+      combinedChart.data.datasets[1].data = [getScopeTotals('personal'), getScopeTotals('business')];
+      combinedChart.data.datasets[2].data = [Math.max(state.budgets.personal - getScopeTotals('personal'), 0), Math.max(state.budgets.business - getScopeTotals('business'), 0)];
+      combinedChart.update();
 
-      const cat = getCategoryDataCurrentMonth();
-      categoryChart.data.labels = cat.labels;
-      categoryChart.data.datasets[0].data = cat.data;
-      categoryChart.update();
-    }
-
-    // Delete expense function
-    function deleteExpense(index) {
-      if (confirm('Are you sure you want to delete this expense?')) {
-        state.expenses.splice(index, 1);
-        saveUserData(currentUserEmail, state);
-        renderAll();
+      if (budgetsCombinedChart) {
+        budgetsCombinedChart.data.datasets[0].data = [state.budgets.personal, state.budgets.business];
+        budgetsCombinedChart.data.datasets[1].data = [getScopeTotals('personal'), getScopeTotals('business')];
+        budgetsCombinedChart.data.datasets[2].data = [Math.max(state.budgets.personal - getScopeTotals('personal'), 0), Math.max(state.budgets.business - getScopeTotals('business'), 0)];
+        budgetsCombinedChart.update();
       }
+
+      const personalData = aggregateCategories('personal');
+      personalChart.data.labels = personalData.labels;
+      personalChart.data.datasets[0].data = personalData.values;
+      personalChart.data.datasets[0].backgroundColor = personalData.labels.map((_, idx) => `hsla(${idx * 40}, 90%, 70%, 0.9)`);
+      personalChart.update();
+
+      const businessData = aggregateCategories('business');
+      businessChart.data.labels = businessData.labels;
+      businessChart.data.datasets[0].data = businessData.values;
+      businessChart.data.datasets[0].backgroundColor = businessData.labels.map((_, idx) => `hsla(${idx * 50 + 180}, 80%, 65%, 0.9)`);
+      businessChart.update();
+
+      document.getElementById('personal-mix-total').textContent = formatCurrency(getScopeTotals('personal'));
+      document.getElementById('business-mix-total').textContent = formatCurrency(getScopeTotals('business'));
     }
 
-    // Delete subscription function
-    function deleteSubscription(index) {
-      if (confirm('Are you sure you want to delete this subscription?')) {
-        state.subscriptions.splice(index, 1);
-        saveUserData(currentUserEmail, state);
-        renderAll();
+    function setTodayDefaults() {
+      const today = new Date().toISOString().split('T')[0];
+      document.querySelectorAll('[data-today]').forEach(input => {
+        if (!input.value) input.value = today;
+      });
+      document.getElementById('today-date').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+    }
+
+    function render() {
+      renderHighlights();
+      renderTables();
+      updateCharts();
+      document.querySelector('[name="personalBudget"]').value = state.budgets.personal;
+      document.querySelector('[name="businessBudget"]').value = state.budgets.business;
+      document.getElementById('budgets-budget-form').querySelector('[name="personalBudget"]').value = state.budgets.personal;
+      document.getElementById('budgets-budget-form').querySelector('[name="businessBudget"]').value = state.budgets.business;
+    }
+
+    function exportToSheets() {
+      if (!sheetsUrl) {
+        document.getElementById('sheets-modal').classList.remove('hidden');
+        return;
       }
-    }
-
-    // Rendering metrics & tables
-    function renderOverviewMetrics() {
-      const now = new Date();
-      const m = now.getMonth();
-      const y = now.getFullYear();
-
-      let monthTotal = 0;
-      let prevMonthTotal = 0;
-      let todayTotal = 0;
-      let todayCount = 0;
-      let todayMax = 0;
-
-      state.expenses.forEach((e) => {
-        const d = new Date(e.date);
-        const amt = Number(e.amount || 0);
-        if (d.getFullYear() === y && d.getMonth() === m) monthTotal += amt;
-        if (d.getFullYear() === y && d.getMonth() === m - 1) prevMonthTotal += amt;
-        if (d.toISOString().slice(0,10) === todayISO()) {
-          todayTotal += amt;
-          todayCount += 1;
-          if (amt > todayMax) todayMax = amt;
-        }
-      });
-
-      const totalSpentRange = state.expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
-
-      const daysInMonth = new Date(y, m + 1, 0).getDate();
-      const avgPerDay = monthTotal / daysInMonth;
-
-      const change = prevMonthTotal ? ((monthTotal - prevMonthTotal) / prevMonthTotal) * 100 : 0;
-
-      document.getElementById('heroMonthSpent').textContent = formatCurrency(monthTotal).replace('$', '$');
-      document.getElementById('metric-total-spent').textContent = formatCurrency(totalSpentRange);
-      document.getElementById('metric-avg-day').textContent = formatCurrency(avgPerDay);
-      const changeEl = document.getElementById('monthChangeLabel');
-      changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(1) + '%';
-
-      document.getElementById('todaySpentLabel').textContent = formatCurrency(todayTotal);
-      document.getElementById('todayCountLabel').textContent = todayCount;
-      document.getElementById('todayLargestLabel').textContent = formatCurrency(todayMax);
-    }
-
-    function renderSubscriptionsOverview() {
-      const heroSubCountEl = document.getElementById('heroSubCount');
-      const heroSubTotalEl = document.getElementById('heroSubTotal');
-      const overviewSubsBody = document.getElementById('overviewSubsBody');
-      const metricUpcomingCount = document.getElementById('metric-upcoming-count');
-      const metricUpcomingTotal = document.getElementById('metric-upcoming-total');
-
-      const activeSubs = state.subscriptions.filter((s) => s.status === 'active');
-      const count = activeSubs.length;
-      let monthlyTotal = 0;
-
-      activeSubs.forEach((s) => {
-        let monthly = Number(s.amount || 0);
-        if (s.billing === 'yearly') monthly = monthly / 12;
-        if (s.billing === 'weekly') monthly = monthly * 4.345;
-        monthlyTotal += monthly;
-      });
-
-      heroSubCountEl.textContent = count;
-      heroSubTotalEl.textContent = monthlyTotal.toFixed(0);
-
-      // Upcoming within 30 days
-      const now = new Date();
-      const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-      let upcomingCount = 0;
-      let upcomingTotal = 0;
-
-      activeSubs.forEach((s) => {
-        const d = new Date(s.next);
-        if (d >= now && d <= in30) {
-          upcomingCount++;
-          upcomingTotal += Number(s.amount || 0);
-        }
-      });
-
-      metricUpcomingCount.textContent = upcomingCount;
-      metricUpcomingTotal.textContent = upcomingTotal.toFixed(0);
-
-      // Top subs list
-      const top = [...activeSubs].sort((a, b) => b.amount - a.amount).slice(0, 8);
-      overviewSubsBody.innerHTML = top
-        .map((s, index) => {
-          const cycle = s.billing === 'monthly' ? 'mo' : s.billing === 'yearly' ? 'yr' : 'wk';
-          return `<tr class="hover:bg-slate-900/60">
-            <td class="px-4 py-2.5 text-[11px] text-slate-100">${s.name}</td>
-            <td class="px-2 py-2.5 text-right text-[11px] text-slate-100">${formatCurrency(Number(s.amount || 0))}</td>
-            <td class="px-2 py-2.5 text-[11px] text-slate-400">${cycle}</td>
-            <td class="px-2 py-2.5 text-[11px]">
-              <button onclick="deleteSubscription(${state.subscriptions.indexOf(s)})" class="text-rose-400 hover:text-rose-300 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                </svg>
-              </button>
-            </td>
-          </tr>`;
-        })
-        .join('');
-    }
-
-    function renderBudget() {
-      const budgetInput = document.getElementById('budgetInput');
-      const metricBudgetUsed = document.getElementById('metric-budget-used');
-      const metricBudgetTotal = document.getElementById('metric-budget-total');
-      const metricBudgetBar = document.getElementById('metric-budget-bar');
-      const budgetRing = document.getElementById('budgetRing');
-      const budgetRingLabel = document.getElementById('budgetRingLabel');
-
-      budgetInput.value = state.budget;
-
-      const now = new Date();
-      const m = now.getMonth();
-      const y = now.getFullYear();
-      let monthTotal = 0;
-      state.expenses.forEach((e) => {
-        const d = new Date(e.date);
-        if (d.getFullYear() === y && d.getMonth() === m) monthTotal += Number(e.amount || 0);
-      });
-
-      const pct = state.budget ? Math.min(999, (monthTotal / state.budget) * 100) : 0;
-      metricBudgetUsed.textContent = pct.toFixed(0) + '%';
-      metricBudgetTotal.textContent = state.budget.toFixed(0);
-      const clamped = Math.min(100, pct);
-      metricBudgetBar.style.width = clamped + '%';
-
-      const circumference = 2 * Math.PI * 16; // r = 16
-      const offset = circumference - (Math.min(100, pct) / 100) * circumference;
-      budgetRing.setAttribute('stroke-dasharray', circumference);
-      budgetRing.setAttribute('stroke-dashoffset', offset);
-      budgetRingLabel.textContent = clamped.toFixed(0) + '%';
-    }
-
-    function renderRecentExpenses() {
-      const body = document.getElementById('recentExpensesBody');
-      const sorted = [...state.expenses].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 10);
-      body.innerHTML = sorted
-        .map((e, index) => {
-          const expenseIndex = state.expenses.indexOf(e);
-          return `<tr class="hover:bg-slate-900/60">
-            <td class="px-4 py-2.5 text-[11px] text-slate-300">${e.date}</td>
-            <td class="px-2 py-2.5 text-[11px] text-slate-100">${e.description}</td>
-            <td class="px-2 py-2.5 text-[11px]"><span class="inline-flex px-1.5 py-0.5 rounded-full bg-slate-900/90 border border-slate-700/80 text-[10px] text-slate-200">${e.category || 'General'}</span></td>
-            <td class="px-2 py-2.5 text-[11px] text-right text-slate-100">${formatCurrency(Number(e.amount || 0))}</td>
-            <td class="px-2 py-2.5 text-[11px] text-slate-400">${e.method || ''}</td>
-            <td class="px-2 py-2.5 text-[11px]">
-              <button onclick="deleteExpense(${expenseIndex})" class="text-rose-400 hover:text-rose-300 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                </svg>
-              </button>
-            </td>
-          </tr>`;
-        })
-        .join('');
-    }
-
-    function renderExpensesTable() {
-      const tbody = document.getElementById('expensesTableBody');
-      const catFilter = document.getElementById('expensesCategoryFilter').value;
-      const timeFilter = document.getElementById('expensesTimeFilter').value;
-      const now = new Date();
-
-      const filtered = state.expenses.filter((e) => {
-        const d = new Date(e.date);
-        if (catFilter !== 'all' && e.category !== catFilter) return false;
-        if (timeFilter === 'month') {
-          return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
-        } else if (timeFilter === '3months') {
-          const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
-          return d >= threeMonthsAgo && d <= now;
-        } else if (timeFilter === 'year') {
-          return d.getFullYear() === now.getFullYear();
-        }
-        return true;
-      });
-
-      const rows = filtered
-        .sort((a, b) => new Date(b.date) - new Date(a.date))
-        .map((e) => {
-          const expenseIndex = state.expenses.indexOf(e);
-          return `<tr class="hover:bg-slate-900/60">
-            <td class="px-4 py-2.5 text-[11px] text-slate-300">${e.date}</td>
-            <td class="px-2 py-2.5 text-[11px] text-slate-100">${e.description}</td>
-            <td class="px-2 py-2.5 text-[11px] text-slate-200">${e.category || 'General'}</td>
-            <td class="px-2 py-2.5 text-[11px] text-right text-slate-100">${formatCurrency(Number(e.amount || 0))}</td>
-            <td class="px-2 py-2.5 text-[11px] text-slate-400">${e.method || ''}</td>
-            <td class="px-2 py-2.5 text-[11px] text-slate-500">${e.notes || ''}</td>
-            <td class="px-2 py-2.5 text-[11px]">
-              <button onclick="deleteExpense(${expenseIndex})" class="text-rose-400 hover:text-rose-300 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                </svg>
-              </button>
-            </td>
-          </tr>`;
-        })
-        .join('');
-      tbody.innerHTML = rows || `<tr><td colspan="7" class="px-4 py-3 text-center text-[11px] text-slate-500">No expenses yet. Add one to get started.</td></tr>`;
-    }
-
-    function renderSubsTable() {
-      const tbody = document.getElementById('subsTableBody');
-      const statusFilter = document.getElementById('subsStatusFilter').value;
-      const filtered = state.subscriptions.filter((s) => {
-        if (statusFilter === 'all') return true;
-        return s.status === statusFilter;
-      });
-
-      const rows = filtered
-        .sort((a, b) => new Date(a.next) - new Date(b.next))
-        .map((s) => {
-          const subIndex = state.subscriptions.indexOf(s);
-          const cycleLabel = s.billing === 'monthly' ? 'Monthly' : s.billing === 'yearly' ? 'Yearly' : 'Weekly';
-          const statusColor = s.status === 'active' ? 'bg-emerald-500/15 text-emerald-200 border-emerald-500/40' : s.status === 'paused' ? 'bg-amber-500/15 text-amber-200 border-amber-500/40' : 'bg-slate-700/30 text-slate-200 border-slate-500/40';
-          return `<tr class="hover:bg-slate-900/60">
-            <td class="px-4 py-2.5 text-[11px] text-slate-100">${s.name}</td>
-            <td class="px-2 py-2.5 text-[11px] text-slate-200">${s.category || 'Other'}</td>
-            <td class="px-2 py-2.5 text-[11px] text-right text-slate-100">${formatCurrency(Number(s.amount || 0))}</td>
-            <td class="px-2 py-2.5 text-[11px] text-slate-400">${cycleLabel}</td>
-            <td class="px-2 py-2.5 text-[11px] text-slate-300">${s.next}</td>
-            <td class="px-2 py-2.5 text-[11px]"><span class="inline-flex px-1.5 py-0.5 rounded-full border ${statusColor} text-[10px] capitalize">${s.status}</span></td>
-            <td class="px-2 py-2.5 text-[11px]">
-              <button onclick="deleteSubscription(${subIndex})" class="text-rose-400 hover:text-rose-300 transition">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
-                </svg>
-              </button>
-            </td>
-          </tr>`;
-        })
-        .join('');
-      tbody.innerHTML = rows || `<tr><td colspan="7" class="px-4 py-3 text-center text-[11px] text-slate-500">No subscriptions yet. Add one to see it here.</td></tr>`;
-    }
-
-    function populateCategoryFilter() {
-      const select = document.getElementById('expensesCategoryFilter');
-      const cats = new Set(state.expenses.map((e) => e.category || 'General'));
-      const options = ['<option value="all">All categories</option>'];
-      Array.from(cats).sort().forEach((c) => {
-        options.push(`<option value="${c}">${c}</option>`);
-      });
-      select.innerHTML = options.join('');
-    }
-
-    // Modals
-    function openModal(id) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.classList.remove('hidden');
-      el.classList.add('flex');
-    }
-
-    function closeModal(id) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.classList.add('hidden');
-      el.classList.remove('flex');
-    }
-
-    function initModals() {
-      document.querySelectorAll('[data-close-modal]').forEach((btn) => {
-        btn.addEventListener('click', () => closeModal(btn.dataset.closeModal));
-      });
-
-      document.getElementById('openExpenseModalBtn').addEventListener('click', () => openModal('expenseModal'));
-      document.getElementById('openSubscriptionModalBtn').addEventListener('click', () => openModal('subscriptionModal'));
-      document.getElementById('quickAddBtn').addEventListener('click', () => openModal('expenseModal'));
-      document.getElementById('addTodayExpenseBtn').addEventListener('click', () => {
-        const dateInput = document.getElementById('expenseDate');
-        dateInput.value = todayISO();
-        openModal('expenseModal');
-      });
-      document.getElementById('addExpenseFromExpenses').addEventListener('click', () => openModal('expenseModal'));
-      document.getElementById('addSubFromSubs').addEventListener('click', () => openModal('subscriptionModal'));
-
-      ['expenseModal', 'subscriptionModal'].forEach((id) => {
-        const el = document.getElementById(id);
-        el.addEventListener('click', (e) => {
-          if (e.target === el) closeModal(id);
-        });
+      
+      const data = {
+        timestamp: new Date().toISOString(),
+        budgets: state.budgets,
+        expenses: state.expenses,
+        subscriptions: state.subscriptions
+      };
+      
+      fetch(sheetsUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      })
+      .then(() => {
+        alert('Data sent to Google Sheets successfully!');
+      })
+      .catch(err => {
+        alert('Error sending data to Google Sheets. Check your URL and try again.');
+        console.error('Sheets export error:', err);
       });
     }
 
-    // Forms
-    function initForms() {
-      const expenseForm = document.getElementById('expenseForm');
-      const subscriptionForm = document.getElementById('subscriptionForm');
-
-      // set default dates
-      document.getElementById('expenseDate').value = todayISO();
-      document.getElementById('subNext').value = todayISO();
-
-      expenseForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const description = document.getElementById('expenseDescription').value.trim();
-        const amount = parseFloat(document.getElementById('expenseAmount').value) || 0;
-        const date = document.getElementById('expenseDate').value || todayISO();
-        const category = document.getElementById('expenseCategory').value || 'General';
-        const method = document.getElementById('expenseMethod').value || '';
-        const notes = document.getElementById('expenseNotes').value.trim();
-
-        state.expenses.push({ description, amount, date, category, method, notes });
-        saveUserData(currentUserEmail, state);
-
-        expenseForm.reset();
-        document.getElementById('expenseDate').value = todayISO();
-
-        populateCategoryFilter();
-        renderAll();
-        closeModal('expenseModal');
+    function switchTab(tabName) {
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
       });
-
-      subscriptionForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const name = document.getElementById('subName').value.trim();
-        const amount = parseFloat(document.getElementById('subAmount').value) || 0;
-        const category = document.getElementById('subCategory').value || 'Other';
-        const billing = document.getElementById('subBilling').value;
-        const next = document.getElementById('subNext').value || todayISO();
-        const status = document.getElementById('subStatus').value;
-
-        state.subscriptions.push({ name, amount, category, billing, next, status });
-        saveUserData(currentUserEmail, state);
-
-        subscriptionForm.reset();
-        document.getElementById('subBilling').value = 'monthly';
-        document.getElementById('subStatus').value = 'active';
-        document.getElementById('subNext').value = todayISO();
-
-        renderAll();
-        closeModal('subscriptionModal');
+      
+      // Show selected tab content
+      document.getElementById(tabName).classList.add('active');
+      
+      // Update navigation buttons
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-white/5', 'text-white');
+        btn.classList.add('text-slate-400');
       });
-
-      document.getElementById('budgetInput').addEventListener('change', (e) => {
-        const value = parseFloat(e.target.value) || 0;
-        state.budget = Math.max(0, value);
-        saveUserData(currentUserEmail, state);
-        renderBudget();
-      });
+      
+      // Activate current tab button
+      document.querySelector(`.nav-btn[data-tab="${tabName}"]`).classList.add('active', 'bg-white/5', 'text-white');
+      document.querySelector(`.nav-btn[data-tab="${tabName}"]`).classList.remove('text-slate-400');
     }
 
-    // Reset data
-    function initReset() {
-      const btn = document.getElementById('settingsResetBtn');
-
-      btn.addEventListener('click', () => {
-        if (!confirm('This will clear all your expenses & subscriptions. This action cannot be undone. Continue?')) return;
-        
-        state.expenses = [];
-        state.subscriptions = [];
-        state.budget = 0;
-        
-        saveUserData(currentUserEmail, state);
-        populateCategoryFilter();
-        renderAll();
-      });
+    function toggleForm(formId) {
+      const form = document.getElementById(formId);
+      form.classList.toggle('hidden');
     }
 
-    function renderWelcome() {
-      const welcomeTitle = document.getElementById('welcomeTitle');
-      const todayLabel = document.getElementById('todayLabel');
-      const now = new Date();
-      const hour = now.getHours();
-      const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-      welcomeTitle.textContent = greeting;
-      todayLabel.textContent = now.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
-    }
-
-    function renderAll() {
-      renderOverviewMetrics();
-      renderSubscriptionsOverview();
-      renderBudget();
-      renderRecentExpenses();
-      renderExpensesTable();
-      renderSubsTable();
-      refreshCharts();
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      initAuth();
-      initNavigation();
-      initSidebar();
-      initModals();
-      initForms();
-      initReset();
-
-      document.getElementById('expensesCategoryFilter').addEventListener('change', renderExpensesTable);
-      document.getElementById('expensesTimeFilter').addEventListener('change', renderExpensesTable);
-      document.getElementById('subsStatusFilter').addEventListener('change', renderSubsTable);
+    // Event Listeners
+    document.getElementById('budget-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const form = e.target;
+      state.budgets.personal = Number(form.personalBudget.value) || 0;
+      state.budgets.business = Number(form.businessBudget.value) || 0;
+      saveState();
+      render();
     });
 
-    // Make delete functions globally available
-    window.deleteExpense = deleteExpense;
-    window.deleteSubscription = deleteSubscription;
+    document.getElementById('budgets-budget-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const form = e.target;
+      state.budgets.personal = Number(form.personalBudget.value) || 0;
+      state.budgets.business = Number(form.businessBudget.value) || 0;
+      saveState();
+      render();
+    });
+
+    document.getElementById('expense-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      const newExpense = {
+        id: crypto.randomUUID(),
+        description: data.get('description'),
+        amount: Number(data.get('amount')),
+        category: data.get('category'),
+        scope: data.get('scope'),
+        date: data.get('date') || new Date().toISOString()
+      };
+      state.expenses.push(newExpense);
+      saveState();
+      render();
+      e.target.reset();
+      setTodayDefaults();
+    });
+
+    document.getElementById('subscription-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      const newSub = {
+        id: crypto.randomUUID(),
+        name: data.get('name'),
+        amount: Number(data.get('amount')),
+        billing: data.get('billing'),
+        scope: data.get('scope'),
+        date: data.get('date') || new Date().toISOString()
+      };
+      state.subscriptions.push(newSub);
+      saveState();
+      render();
+      e.target.reset();
+      setTodayDefaults();
+    });
+
+    // Quick Add Forms
+    document.getElementById('quick-expense-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      const newExpense = {
+        id: crypto.randomUUID(),
+        description: data.get('description'),
+        amount: Number(data.get('amount')),
+        category: data.get('category'),
+        scope: data.get('scope'),
+        date: new Date().toISOString()
+      };
+      state.expenses.push(newExpense);
+      saveState();
+      render();
+      e.target.reset();
+      
+      // Show success feedback
+      const btn = e.target.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+      btn.textContent = 'Added!';
+      btn.classList.remove('from-rose-400', 'to-amber-300');
+      btn.classList.add('from-emerald-400', 'to-emerald-500');
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.classList.remove('from-emerald-400', 'to-emerald-500');
+        btn.classList.add('from-rose-400', 'to-amber-300');
+      }, 1500);
+    });
+
+    document.getElementById('quick-budget-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      const scope = data.get('scope');
+      const amount = Number(data.get('amount'));
+      
+      if (scope === 'personal') {
+        state.budgets.personal = amount;
+      } else {
+        state.budgets.business = amount;
+      }
+      
+      saveState();
+      render();
+      e.target.reset();
+      
+      // Show success feedback
+      const btn = e.target.querySelector('button[type="submit"]');
+      const originalText = btn.textContent;
+      btn.textContent = 'Updated!';
+      btn.classList.remove('from-emerald-400', 'to-blue-500');
+      btn.classList.add('from-emerald-400', 'to-emerald-500');
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.classList.remove('from-emerald-400', 'to-emerald-500');
+        btn.classList.add('from-emerald-400', 'to-blue-500');
+      }, 1500);
+    });
+
+    document.addEventListener('click', (e) => {
+      // Delete expense or subscription
+      if (e.target.closest('.delete-btn')) {
+        const btn = e.target.closest('.delete-btn');
+        const id = btn.getAttribute('data-id');
+        const type = btn.getAttribute('data-type');
+        
+        if (type === 'expense') {
+          state.expenses = state.expenses.filter(item => item.id != id);
+        } else if (type === 'subscription') {
+          state.subscriptions = state.subscriptions.filter(item => item.id != id);
+        }
+        
+        saveState();
+        render();
+      }
+      
+      // Tab navigation
+      if (e.target.closest('.nav-btn')) {
+        const btn = e.target.closest('.nav-btn');
+        const tabName = btn.getAttribute('data-tab');
+        switchTab(tabName);
+      }
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      if (confirm('Reset all data and seed demo entries?')) {
+        state = structuredClone(stateDefaults);
+        saveState();
+        render();
+      }
+    });
+
+    document.getElementById('export-btn').addEventListener('click', exportToSheets);
+
+    document.getElementById('quick-log').addEventListener('click', () => {
+      const scope = prompt('Scope? personal / business');
+      if (!scope || !['personal', 'business'].includes(scope.toLowerCase())) return;
+      const amount = Number(prompt('Amount in USD?'));
+      if (!amount) return;
+      const description = prompt('Description?') || 'Quick log';
+      state.expenses.push({
+        id: crypto.randomUUID(),
+        description,
+        amount,
+        category: 'Quick log',
+        scope: scope.toLowerCase(),
+        date: new Date().toISOString()
+      });
+      saveState();
+      render();
+    });
+
+    // Google Sheets modal handlers
+    document.getElementById('close-sheets').addEventListener('click', () => {
+      document.getElementById('sheets-modal').classList.add('hidden');
+    });
+
+    document.getElementById('save-sheets').addEventListener('click', () => {
+      sheetsUrl = document.getElementById('sheets-url').value;
+      if (sheetsUrl) {
+        localStorage.setItem(SHEETS_URL_KEY, sheetsUrl);
+        document.getElementById('sheets-modal').classList.add('hidden');
+        alert('Google Sheets URL saved successfully!');
+      } else {
+        alert('Please enter a valid URL');
+      }
+    });
+
+    function init() {
+      loadState();
+      setTodayDefaults();
+      initCharts();
+      render();
+      document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+      
+      // Pre-fill sheets URL if available
+      if (sheetsUrl) {
+        document.getElementById('sheets-url').value = sheetsUrl;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>
