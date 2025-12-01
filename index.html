@@ -86,6 +86,27 @@
       background: rgba(255, 255, 255, 0.1);
       border-left: 3px solid rgba(96, 165, 250, 1);
     }
+    
+    .currency-input {
+      position: relative;
+    }
+    
+    .currency-input input {
+      padding-right: 60px;
+    }
+    
+    .currency-label {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      font-size: 0.875rem;
+    }
+    
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body class="min-h-screen">
@@ -168,7 +189,6 @@
             <div class="px-4 py-2 rounded-xl bg-white/5 text-sm">
               Total Balance Watch · <span class="font-semibold text-emerald-300" id="total-left">$0.00</span> left
             </div>
-            <button class="p-3 rounded-2xl bg-gradient-to-r from-purple-500 to-amber-400 text-slate-950 font-semibold shadow-lg shadow-amber-500/30 text-sm" id="quick-log">Quick Log</button>
           </div>
         </header>
 
@@ -190,21 +210,33 @@
                   <span class="text-xs text-slate-400">Description</span>
                   <input name="description" required placeholder="Lunch, supplies..." class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rose-200">
                 </label>
-                <label class="flex flex-col gap-1 text-sm">
+                <label class="flex flex-col gap-1 text-sm currency-input">
                   <span class="text-xs text-slate-400">Amount</span>
                   <input type="number" step="0.01" min="0" name="amount" required class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rose-200">
+                  <span class="currency-label">USD</span>
                 </label>
               </div>
               <div class="grid gap-4 grid-cols-2">
                 <label class="flex flex-col gap-1 text-sm">
-                  <span class="text-xs text-slate-400">Category</span>
-                  <input name="category" placeholder="Food, Office..." class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rose-200">
-                </label>
-                <label class="flex flex-col gap-1 text-sm">
                   <span class="text-xs text-slate-400">Scope</span>
-                  <select name="scope" class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rose-200" required>
+                  <select name="scope" class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rose-200" required id="quick-expense-scope">
                     <option value="personal">Personal</option>
                     <option value="business">Business</option>
+                  </select>
+                </label>
+                <label class="flex flex-col gap-1 text-sm">
+                  <span class="text-xs text-slate-400">Category</span>
+                  <select name="category" class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rose-200" required id="quick-expense-category">
+                    <!-- Personal categories will be loaded by default -->
+                    <option value="Food & Dining">Food & Dining</option>
+                    <option value="Transportation">Transportation</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Education">Education</option>
+                    <option value="Personal Care">Personal Care</option>
+                    <option value="Gifts & Donations">Gifts & Donations</option>
+                    <option value="Other">Other</option>
                   </select>
                 </label>
               </div>
@@ -228,9 +260,32 @@
                   <span class="text-xs text-slate-400">Name</span>
                   <input name="name" required placeholder="Netflix, Spotify..." class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-sky-200">
                 </label>
-                <label class="flex flex-col gap-1 text-sm">
+                <label class="flex flex-col gap-1 text-sm currency-input">
                   <span class="text-xs text-slate-400">Amount</span>
                   <input type="number" step="0.01" min="0" name="amount" required class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-sky-200">
+                  <span class="currency-label">USD</span>
+                </label>
+              </div>
+              <div class="grid gap-4 grid-cols-2">
+                <label class="flex flex-col gap-1 text-sm">
+                  <span class="text-xs text-slate-400">Scope</span>
+                  <select name="scope" class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-sky-200" required id="quick-subscription-scope">
+                    <option value="personal">Personal</option>
+                    <option value="business">Business</option>
+                  </select>
+                </label>
+                <label class="flex flex-col gap-1 text-sm">
+                  <span class="text-xs text-slate-400">Category</span>
+                  <select name="category" class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-sky-200" required id="quick-subscription-category">
+                    <!-- Personal categories will be loaded by default -->
+                    <option value="Streaming">Streaming</option>
+                    <option value="Music">Music</option>
+                    <option value="Fitness">Fitness</option>
+                    <option value="News">News</option>
+                    <option value="Cloud Storage">Cloud Storage</option>
+                    <option value="Gaming">Gaming</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </label>
               </div>
               <div class="grid gap-4 grid-cols-2">
@@ -240,13 +295,6 @@
                     <option value="Monthly">Monthly</option>
                     <option value="Quarterly">Quarterly</option>
                     <option value="Annual">Annual</option>
-                  </select>
-                </label>
-                <label class="flex flex-col gap-1 text-sm">
-                  <span class="text-xs text-slate-400">Scope</span>
-                  <select name="scope" class="mt-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-sky-200" required>
-                    <option value="personal">Personal</option>
-                    <option value="business">Business</option>
                   </select>
                 </label>
               </div>
@@ -414,6 +462,7 @@
                   <tr>
                     <th class="py-2">Service</th>
                     <th class="py-2">Scope</th>
+                    <th class="py-2">Category</th>
                     <th class="py-2">Billing</th>
                     <th class="py-2 text-right">Amount</th>
                   </tr>
@@ -451,21 +500,33 @@
                   Description
                   <input name="description" required placeholder="Dinner, ad spend…" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-rose-200">
                 </label>
-                <label class="flex flex-col gap-1 text-sm">
+                <label class="flex flex-col gap-1 text-sm currency-input">
                   Amount
                   <input type="number" step="0.01" min="0" name="amount" required class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-rose-200">
+                  <span class="currency-label">USD</span>
                 </label>
               </div>
               <div class="grid gap-4 sm:grid-cols-2">
                 <label class="flex flex-col gap-1 text-sm">
-                  Category
-                  <input name="category" placeholder="Food, SaaS, marketing" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-rose-200">
-                </label>
-                <label class="flex flex-col gap-1 text-sm">
                   Scope
-                  <select name="scope" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-rose-200" required>
+                  <select name="scope" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-rose-200" required id="expense-scope">
                     <option value="personal">Personal</option>
                     <option value="business">Business</option>
+                  </select>
+                </label>
+                <label class="flex flex-col gap-1 text-sm">
+                  Category
+                  <select name="category" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-rose-200" required id="expense-category">
+                    <!-- Personal categories will be loaded by default -->
+                    <option value="Food & Dining">Food & Dining</option>
+                    <option value="Transportation">Transportation</option>
+                    <option value="Entertainment">Entertainment</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Education">Education</option>
+                    <option value="Personal Care">Personal Care</option>
+                    <option value="Gifts & Donations">Gifts & Donations</option>
+                    <option value="Other">Other</option>
                   </select>
                 </label>
               </div>
@@ -541,9 +602,32 @@
                   Name
                   <input name="name" required placeholder="Notion, Canva Pro…" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-200">
                 </label>
-                <label class="flex flex-col gap-1 text-sm">
+                <label class="flex flex-col gap-1 text-sm currency-input">
                   Amount
                   <input type="number" step="0.01" min="0" name="amount" required class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-200">
+                  <span class="currency-label">USD</span>
+                </label>
+              </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label class="flex flex-col gap-1 text-sm">
+                  Scope
+                  <select name="scope" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-200" required id="subscription-scope">
+                    <option value="personal">Personal</option>
+                    <option value="business">Business</option>
+                  </select>
+                </label>
+                <label class="flex flex-col gap-1 text-sm">
+                  Category
+                  <select name="category" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-200" required id="subscription-category">
+                    <!-- Personal categories will be loaded by default -->
+                    <option value="Streaming">Streaming</option>
+                    <option value="Music">Music</option>
+                    <option value="Fitness">Fitness</option>
+                    <option value="News">News</option>
+                    <option value="Cloud Storage">Cloud Storage</option>
+                    <option value="Gaming">Gaming</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </label>
               </div>
               <div class="grid gap-4 sm:grid-cols-2">
@@ -556,17 +640,10 @@
                   </select>
                 </label>
                 <label class="flex flex-col gap-1 text-sm">
-                  Scope
-                  <select name="scope" class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-200" required>
-                    <option value="personal">Personal</option>
-                    <option value="business">Business</option>
-                  </select>
+                  Next Charge Date
+                  <input type="date" name="date" data-today class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-200" required>
                 </label>
               </div>
-              <label class="flex flex-col gap-1 text-sm">
-                Next Charge Date
-                <input type="date" name="date" data-today class="mt-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-200" required>
-              </label>
               <button type="submit" class="w-full bg-gradient-to-r from-sky-400 via-violet-400 to-indigo-500 text-white font-semibold py-3 rounded-2xl shadow-lg shadow-sky-500/30">Add Subscription</button>
             </form>
           </div>
@@ -583,6 +660,7 @@
                     <tr>
                       <th class="py-2">Service</th>
                       <th class="py-2">Scope</th>
+                      <th class="py-2">Category</th>
                       <th class="py-2">Billing</th>
                       <th class="py-2 text-right">Amount</th>
                       <th class="py-2 text-right">Actions</th>
@@ -753,8 +831,70 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'ledger_luxe_multi_dashboard_v1';
+    const STORAGE_KEY = 'ledger_luxe_multi_dashboard_v2';
     
+    // Define categories for expenses and subscriptions
+    const categories = {
+      expense: {
+        personal: [
+          'Food & Dining',
+          'Transportation',
+          'Entertainment',
+          'Shopping',
+          'Healthcare',
+          'Education',
+          'Personal Care',
+          'Gifts & Donations',
+          'Housing',
+          'Utilities',
+          'Insurance',
+          'Travel',
+          'Other'
+        ],
+        business: [
+          'Office Supplies',
+          'Software & Tools',
+          'Marketing & Advertising',
+          'Travel & Accommodation',
+          'Professional Services',
+          'Rent & Utilities',
+          'Equipment',
+          'Training & Development',
+          'Insurance',
+          'Bank Fees',
+          'Taxes',
+          'Shipping',
+          'Other'
+        ]
+      },
+      subscription: {
+        personal: [
+          'Streaming Services',
+          'Music',
+          'Fitness & Wellness',
+          'News & Publications',
+          'Cloud Storage',
+          'Gaming',
+          'Educational',
+          'Productivity Tools',
+          'Security Software',
+          'Other'
+        ],
+        business: [
+          'SaaS Tools',
+          'Hosting & Domains',
+          'Analytics',
+          'Security',
+          'Communication',
+          'Project Management',
+          'CRM',
+          'Accounting',
+          'Marketing Tools',
+          'Other'
+        ]
+      }
+    };
+
     const dashboardDefaults = {
       id: 'default',
       name: 'Main Dashboard',
@@ -801,6 +941,23 @@
           }
         };
       }
+    }
+
+    function updateCategoryOptions(scopeSelectId, categorySelectId, type) {
+      const scopeSelect = document.getElementById(scopeSelectId);
+      const categorySelect = document.getElementById(categorySelectId);
+      const scope = scopeSelect.value;
+      
+      // Clear existing options
+      categorySelect.innerHTML = '';
+      
+      // Add new options based on scope and type
+      categories[type][scope].forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        categorySelect.appendChild(option);
+      });
     }
 
     function getScopeTotals(scope) {
@@ -887,11 +1044,12 @@
             <td class="py-3">
               <span class="px-2.5 py-1 rounded-full text-xs ${item.scope === 'personal' ? 'bg-emerald-500/10 text-emerald-200' : 'bg-indigo-500/10 text-indigo-200'}">${item.scope}</span>
             </td>
+            <td class="py-3 text-slate-300">${item.category}</td>
             <td class="py-3 text-slate-300">${item.billing}</td>
             <td class="py-3 text-right font-semibold">${formatCurrency(Number(item.amount))}</td>
           </tr>
         `).join('');
-      recentSubBody.innerHTML = recentSubRows || '<tr><td class="py-4 text-center text-slate-500" colspan="4">No subscriptions on file.</td></tr>';
+      recentSubBody.innerHTML = recentSubRows || '<tr><td class="py-4 text-center text-slate-500" colspan="5">No subscriptions on file.</td></tr>';
 
       // Full expense table (expenses page)
       const expenseBody = document.getElementById('expense-table');
@@ -934,6 +1092,7 @@
             <td class="py-3">
               <span class="px-2.5 py-1 rounded-full text-xs ${item.scope === 'personal' ? 'bg-emerald-500/10 text-emerald-200' : 'bg-indigo-500/10 text-indigo-200'}">${item.scope}</span>
             </td>
+            <td class="py-3 text-slate-300">${item.category}</td>
             <td class="py-3 text-slate-300">${item.billing}</td>
             <td class="py-3 text-right font-semibold">${formatCurrency(Number(item.amount))}</td>
             <td class="py-3 text-right">
@@ -945,7 +1104,7 @@
             </td>
           </tr>
         `).join('');
-      subBody.innerHTML = subRows || '<tr><td class="py-4 text-center text-slate-500" colspan="5">No subscriptions on file.</td></tr>';
+      subBody.innerHTML = subRows || '<tr><td class="py-4 text-center text-slate-500" colspan="6">No subscriptions on file.</td></tr>';
       document.getElementById('subscription-page-count').textContent = `${dashboard.subscriptions.length} entries`;
       document.getElementById('subscriptions-total').textContent = formatCurrency(dashboard.subscriptions.reduce((sum, s) => sum + Number(s.amount), 0));
     }
@@ -1372,27 +1531,79 @@
     }
 
     function downloadData() {
-      // Create a data object with all financial information
-      const dataToDownload = {
-        exportDate: new Date().toISOString(),
-        version: '1.0',
-        dashboards: state.dashboards,
-        currentDashboardId: state.currentDashboardId
-      };
+      const dashboard = getCurrentDashboard();
       
-      // Create a JSON string
-      const dataStr = JSON.stringify(dataToDownload, null, 2);
+      // Create structured CSV data
+      let csvData = 'LEDGER LUXE - FINANCIAL DATA EXPORT\n';
+      csvData += '========================================\n\n';
       
-      // Create a Blob with the data
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      // Dashboard Information
+      csvData += 'DASHBOARD INFORMATION\n';
+      csvData += 'Name:,' + dashboard.name + '\n';
+      csvData += 'Description:,' + (dashboard.description || 'N/A') + '\n';
+      csvData += 'Created:,' + new Date(dashboard.createdAt).toLocaleDateString() + '\n\n';
+      
+      // Budgets
+      csvData += 'BUDGETS\n';
+      csvData += 'Scope,Amount\n';
+      csvData += 'Personal Budget,' + formatCurrency(dashboard.budgets.personal) + '\n';
+      csvData += 'Business Budget,' + formatCurrency(dashboard.budgets.business) + '\n';
+      csvData += 'Total Budget,' + formatCurrency(dashboard.budgets.personal + dashboard.budgets.business) + '\n\n';
+      
+      // Expenses
+      csvData += 'EXPENSES (' + dashboard.expenses.length + ' entries)\n';
+      csvData += 'Date,Description,Scope,Category,Amount\n';
+      dashboard.expenses.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(expense => {
+        csvData += `${expense.date},${expense.description},${expense.scope},${expense.category},${formatCurrency(Number(expense.amount))}\n`;
+      });
+      
+      // Summary of expenses by scope
+      const personalExpenses = dashboard.expenses.filter(e => e.scope === 'personal');
+      const businessExpenses = dashboard.expenses.filter(e => e.scope === 'business');
+      csvData += '\nEXPENSE SUMMARY\n';
+      csvData += 'Scope,Count,Total Amount\n';
+      csvData += `Personal,${personalExpenses.length},${formatCurrency(personalExpenses.reduce((sum, e) => sum + Number(e.amount), 0))}\n`;
+      csvData += `Business,${businessExpenses.length},${formatCurrency(businessExpenses.reduce((sum, e) => sum + Number(e.amount), 0))}\n`;
+      csvData += `Total,${dashboard.expenses.length},${formatCurrency(dashboard.expenses.reduce((sum, e) => sum + Number(e.amount), 0))}\n\n`;
+      
+      // Subscriptions
+      csvData += 'SUBSCRIPTIONS (' + dashboard.subscriptions.length + ' entries)\n';
+      csvData += 'Name,Scope,Category,Billing Cycle,Next Charge,Amount\n';
+      dashboard.subscriptions.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(sub => {
+        csvData += `${sub.name},${sub.scope},${sub.category},${sub.billing},${sub.date},${formatCurrency(Number(sub.amount))}\n`;
+      });
+      
+      // Summary of subscriptions by scope
+      const personalSubs = dashboard.subscriptions.filter(s => s.scope === 'personal');
+      const businessSubs = dashboard.subscriptions.filter(s => s.scope === 'business');
+      csvData += '\nSUBSCRIPTION SUMMARY\n';
+      csvData += 'Scope,Count,Total Monthly Amount\n';
+      csvData += `Personal,${personalSubs.length},${formatCurrency(personalSubs.reduce((sum, s) => sum + Number(s.amount), 0))}\n`;
+      csvData += `Business,${businessSubs.length},${formatCurrency(businessSubs.reduce((sum, s) => sum + Number(s.amount), 0))}\n`;
+      csvData += `Total,${dashboard.subscriptions.length},${formatCurrency(dashboard.subscriptions.reduce((sum, s) => sum + Number(s.amount), 0))}\n\n`;
+      
+      // Overall Summary
+      csvData += 'OVERALL SUMMARY\n';
+      csvData += 'Category,Personal,Business,Total\n';
+      csvData += `Expenses,${formatCurrency(personalExpenses.reduce((sum, e) => sum + Number(e.amount), 0))},${formatCurrency(businessExpenses.reduce((sum, e) => sum + Number(e.amount), 0))},${formatCurrency(dashboard.expenses.reduce((sum, e) => sum + Number(e.amount), 0))}\n`;
+      csvData += `Subscriptions,${formatCurrency(personalSubs.reduce((sum, s) => sum + Number(s.amount), 0))},${formatCurrency(businessSubs.reduce((sum, s) => sum + Number(s.amount), 0))},${formatCurrency(dashboard.subscriptions.reduce((sum, s) => sum + Number(s.amount), 0))}\n`;
+      csvData += `Total Spent,${formatCurrency(getScopeTotals('personal'))},${formatCurrency(getScopeTotals('business'))},${formatCurrency(getScopeTotals('personal') + getScopeTotals('business'))}\n`;
+      csvData += `Budget,${formatCurrency(dashboard.budgets.personal)},${formatCurrency(dashboard.budgets.business)},${formatCurrency(dashboard.budgets.personal + dashboard.budgets.business)}\n`;
+      csvData += `Remaining,${formatCurrency(Math.max(dashboard.budgets.personal - getScopeTotals('personal'), 0))},${formatCurrency(Math.max(dashboard.budgets.business - getScopeTotals('business'), 0))},${formatCurrency(Math.max((dashboard.budgets.personal + dashboard.budgets.business) - (getScopeTotals('personal') + getScopeTotals('business')), 0))}\n`;
+      
+      // Export date
+      csvData += '\n\nExport Date:,' + new Date().toLocaleString();
+      
+      // Create a Blob with the CSV data
+      const blob = new Blob([csvData], { type: 'text/csv' });
       
       // Create a URL for the Blob
-      const url = URL.createObjectURL(dataBlob);
+      const url = URL.createObjectURL(blob);
       
       // Create a temporary anchor element to trigger the download
       const link = document.createElement('a');
       link.href = url;
-      link.download = `ledger-luxe-dashboards-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `ledger-luxe-${dashboard.name.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1401,13 +1612,19 @@
       URL.revokeObjectURL(url);
       
       // Show success message
-      alert('Your dashboard data has been downloaded! You can now send this file to your email.');
+      alert('Your dashboard data has been downloaded as a structured CSV file!');
     }
 
     function switchDashboard(dashboardId) {
       state.currentDashboardId = dashboardId;
       saveState();
       render();
+      
+      // Update category options for the new dashboard
+      updateCategoryOptions('quick-expense-scope', 'quick-expense-category', 'expense');
+      updateCategoryOptions('expense-scope', 'expense-category', 'expense');
+      updateCategoryOptions('quick-subscription-scope', 'quick-subscription-category', 'subscription');
+      updateCategoryOptions('subscription-scope', 'subscription-category', 'subscription');
     }
 
     function createDashboard(name, description, personalBudget = 0, businessBudget = 0) {
@@ -1517,6 +1734,7 @@
         name: data.get('name'),
         amount: Number(data.get('amount')),
         billing: data.get('billing'),
+        category: data.get('category'),
         scope: data.get('scope'),
         date: data.get('date') || new Date().toISOString()
       };
@@ -1567,6 +1785,7 @@
         name: data.get('name'),
         amount: Number(data.get('amount')),
         billing: data.get('billing'),
+        category: data.get('category'),
         scope: data.get('scope'),
         date: new Date().toISOString()
       };
@@ -1602,6 +1821,23 @@
       
       // Switch to the new dashboard
       switchTab('overview');
+    });
+
+    // Add event listeners for scope changes to update category options
+    document.getElementById('quick-expense-scope').addEventListener('change', () => {
+      updateCategoryOptions('quick-expense-scope', 'quick-expense-category', 'expense');
+    });
+
+    document.getElementById('expense-scope').addEventListener('change', () => {
+      updateCategoryOptions('expense-scope', 'expense-category', 'expense');
+    });
+
+    document.getElementById('quick-subscription-scope').addEventListener('change', () => {
+      updateCategoryOptions('quick-subscription-scope', 'quick-subscription-category', 'subscription');
+    });
+
+    document.getElementById('subscription-scope').addEventListener('change', () => {
+      updateCategoryOptions('subscription-scope', 'subscription-category', 'subscription');
     });
 
     document.addEventListener('click', (e) => {
@@ -1667,31 +1903,18 @@
       document.getElementById('create-dashboard-form').scrollIntoView({ behavior: 'smooth' });
     });
 
-    document.getElementById('quick-log').addEventListener('click', () => {
-      const dashboard = getCurrentDashboard();
-      const scope = prompt('Scope? personal / business');
-      if (!scope || !['personal', 'business'].includes(scope.toLowerCase())) return;
-      const amount = Number(prompt('Amount in USD?'));
-      if (!amount) return;
-      const description = prompt('Description?') || 'Quick log';
-      dashboard.expenses.push({
-        id: crypto.randomUUID(),
-        description,
-        amount,
-        category: 'Quick log',
-        scope: scope.toLowerCase(),
-        date: new Date().toISOString()
-      });
-      saveState();
-      render();
-    });
-
     function init() {
       loadState();
       setTodayDefaults();
       initCharts();
       render();
       document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+      
+      // Initialize category options for all forms
+      updateCategoryOptions('quick-expense-scope', 'quick-expense-category', 'expense');
+      updateCategoryOptions('expense-scope', 'expense-category', 'expense');
+      updateCategoryOptions('quick-subscription-scope', 'quick-subscription-category', 'subscription');
+      updateCategoryOptions('subscription-scope', 'subscription-category', 'subscription');
     }
 
     document.addEventListener('DOMContentLoaded', init);
