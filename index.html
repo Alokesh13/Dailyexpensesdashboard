@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ledger Luxe | Dual Budget Control</title>
+  <title>Ledger Luxe | Multi-Dashboard Control</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -73,6 +73,19 @@
     .form-toggle:hover {
       background: rgba(255, 255, 255, 0.05);
     }
+    
+    .dashboard-item {
+      transition: all 0.2s ease;
+    }
+    
+    .dashboard-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .dashboard-item.active {
+      background: rgba(255, 255, 255, 0.1);
+      border-left: 3px solid rgba(96, 165, 250, 1);
+    }
   </style>
 </head>
 <body class="min-h-screen">
@@ -86,11 +99,11 @@
           </div>
           <div>
             <p class="text-lg font-semibold tracking-tight">Ledger Luxe</p>
-            <p class="text-xs text-slate-400 uppercase tracking-[0.3em]">Control Hub</p>
+            <p class="text-xs text-slate-400 uppercase tracking-[0.3em]">Multi-Dashboard</p>
           </div>
         </div>
         <div class="mt-6 text-sm text-slate-400 leading-relaxed">
-          Track personal and business cashflow, subscriptions, and dual budgets in one luxurious dashboard.
+          Create and manage multiple dashboards for personal, business, and project budgets.
         </div>
       </div>
 
@@ -101,17 +114,30 @@
         </button>
         <button class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-white/5 transition text-slate-400" data-tab="expenses">
           <span>Expenses</span>
-          <span class="text-xs">⌘1</span>
         </button>
         <button class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-white/5 transition text-slate-400" data-tab="subscriptions">
           <span>Subscriptions</span>
-          <span class="text-xs">⌘2</span>
         </button>
         <button class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-white/5 transition text-slate-400" data-tab="budgets">
           <span>Budgets</span>
-          <span class="text-xs">⌘3</span>
+        </button>
+        <button class="nav-btn w-full flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-white/5 transition text-slate-400" data-tab="dashboards">
+          <span>Dashboards</span>
         </button>
       </nav>
+
+      <!-- Dashboard List -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-slate-300 font-semibold">Your Dashboards</p>
+          <button id="create-dashboard-btn" class="text-xs text-blue-300 hover:text-blue-200 transition">
+            + New
+          </button>
+        </div>
+        <div id="dashboard-list" class="space-y-1 max-h-40 overflow-y-auto">
+          <!-- Dashboards will be dynamically added here -->
+        </div>
+      </div>
 
       <div class="mt-auto text-sm text-slate-400">
         <p class="text-slate-200 font-semibold mb-2">Storage</p>
@@ -134,7 +160,9 @@
         <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p class="text-xs uppercase tracking-[0.4em] text-slate-400">Today · <span id="today-date">--</span></p>
-            <h1 class="text-3xl md:text-4xl font-semibold tracking-tight mt-1">Dual Budget Command Console</h1>
+            <h1 class="text-3xl md:text-4xl font-semibold tracking-tight mt-1">
+              <span id="current-dashboard-name">Main Dashboard</span> Control
+            </h1>
           </div>
           <div class="flex items-center gap-3">
             <div class="px-4 py-2 rounded-xl bg-white/5 text-sm">
@@ -548,33 +576,34 @@
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-2xl font-semibold">All Subscriptions</h3>
                 <span class="text-sm text-slate-400" id="subscription-page-count">0 entries</span>
-            </div>
-            <div class="overflow-x-auto max-h-[500px]">
-              <table class="w-full text-sm text-left">
-                <thead class="text-slate-400 uppercase text-xs sticky top-0 bg-slate-900/80 backdrop-blur">
-                  <tr>
-                    <th class="py-2">Service</th>
-                    <th class="py-2">Scope</th>
-                    <th class="py-2">Billing</th>
-                    <th class="py-2 text-right">Amount</th>
-                    <th class="py-2 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="subscription-table" class="divide-y divide-white/5"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="glass rounded-3xl p-6">
-            <div class="flex items-center justify-between mb-6">
-              <div>
-                <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Subscription Analytics</p>
-                <h3 class="text-2xl font-semibold">Cost Distribution</h3>
               </div>
-              <span class="text-xs text-slate-400">By billing cycle</span>
+              <div class="overflow-x-auto max-h-[500px]">
+                <table class="w-full text-sm text-left">
+                  <thead class="text-slate-400 uppercase text-xs sticky top-0 bg-slate-900/80 backdrop-blur">
+                    <tr>
+                      <th class="py-2">Service</th>
+                      <th class="py-2">Scope</th>
+                      <th class="py-2">Billing</th>
+                      <th class="py-2 text-right">Amount</th>
+                      <th class="py-2 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="subscription-table" class="divide-y divide-white/5"></tbody>
+                </table>
+              </div>
             </div>
-            <div class="h-64">
-              <canvas id="subscriptionsChart"></canvas>
+
+            <div class="glass rounded-3xl p-6">
+              <div class="flex items-center justify-between mb-6">
+                <div>
+                  <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Subscription Analytics</p>
+                  <h3 class="text-2xl font-semibold">Cost Distribution</h3>
+                </div>
+                <span class="text-xs text-slate-400">By billing cycle</span>
+              </div>
+              <div class="h-64">
+                <canvas id="subscriptionsChart"></canvas>
+              </div>
             </div>
           </div>
         </section>
@@ -667,13 +696,70 @@
           </div>
         </section>
       </div>
+
+      <!-- Dashboards Tab -->
+      <div id="dashboards" class="tab-content space-y-10">
+        <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p class="text-xs uppercase tracking-[0.4em] text-slate-400">Dashboard Management</p>
+            <h1 class="text-3xl md:text-4xl font-semibold tracking-tight mt-1">Multi-Dashboard Control</h1>
+          </div>
+          <div class="flex items-center gap-3">
+            <button class="p-3 rounded-2xl bg-gradient-to-r from-purple-500 to-amber-400 text-slate-950 font-semibold shadow-lg shadow-amber-500/30 text-sm" id="create-dashboard-main">Create Dashboard</button>
+          </div>
+        </header>
+
+        <section class="grid gap-6 lg:grid-cols-2">
+          <div class="glass rounded-3xl p-6 space-y-6">
+            <div>
+              <h3 class="text-2xl font-semibold">Create New Dashboard</h3>
+              <p class="text-slate-400 mt-1">Set up a new dashboard for different projects or purposes.</p>
+            </div>
+            <form id="create-dashboard-form" class="space-y-4">
+              <label class="flex flex-col gap-2">
+                <span class="text-sm text-slate-300">Dashboard Name</span>
+                <input type="text" name="name" required placeholder="e.g., Personal, Business, Project X" class="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-300/60">
+              </label>
+              <label class="flex flex-col gap-2">
+                <span class="text-sm text-slate-300">Description (Optional)</span>
+                <textarea name="description" rows="3" placeholder="What is this dashboard for?" class="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-300/60"></textarea>
+              </label>
+              <div class="grid gap-4 md:grid-cols-2">
+                <label class="flex flex-col gap-2">
+                  <span class="text-sm text-slate-300">Initial Personal Budget</span>
+                  <input type="number" step="0.01" min="0" name="personalBudget" class="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-amber-300/60">
+                </label>
+                <label class="flex flex-col gap-2">
+                  <span class="text-sm text-slate-300">Initial Business Budget</span>
+                  <input type="number" step="0.01" min="0" name="businessBudget" class="bg-white/5 border border-white/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-sky-300/60">
+                </label>
+              </div>
+              <button type="submit" class="w-full bg-gradient-to-r from-blue-400 to-indigo-500 text-white font-semibold py-3 rounded-2xl shadow-lg shadow-blue-500/30">Create Dashboard</button>
+            </form>
+          </div>
+
+          <div class="glass rounded-3xl p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-2xl font-semibold">Your Dashboards</h3>
+              <span class="text-sm text-slate-400" id="dashboard-count">0 dashboards</span>
+            </div>
+            <div class="space-y-4" id="dashboard-management-list">
+              <!-- Dashboards will be dynamically added here -->
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
   </div>
 
   <script>
-    const STORAGE_KEY = 'ledger_luxe_dual_budget_v6';
+    const STORAGE_KEY = 'ledger_luxe_multi_dashboard_v1';
     
-    const stateDefaults = {
+    const dashboardDefaults = {
+      id: 'default',
+      name: 'Main Dashboard',
+      description: 'Your primary budget dashboard',
+      createdAt: new Date().toISOString(),
       budgets: {
         personal: 0,
         business: 0
@@ -682,11 +768,21 @@
       subscriptions: []
     };
 
-    let state = structuredClone(stateDefaults);
+    let state = {
+      currentDashboardId: 'default',
+      dashboards: {
+        'default': { ...dashboardDefaults }
+      }
+    };
+
     let combinedChart, personalChart, businessChart, budgetsCombinedChart;
     let expensesTrendChart, subscriptionsChart;
 
     const formatCurrency = (val) => val.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+
+    function getCurrentDashboard() {
+      return state.dashboards[state.currentDashboardId];
+    }
 
     function saveState() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -698,59 +794,68 @@
       if (saved) {
         state = JSON.parse(saved);
       } else {
-        state = structuredClone(stateDefaults);
+        state = {
+          currentDashboardId: 'default',
+          dashboards: {
+            'default': { ...dashboardDefaults }
+          }
+        };
       }
     }
 
     function getScopeTotals(scope) {
-      const expenseTotal = state.expenses.filter(e => e.scope === scope).reduce((sum, e) => sum + Number(e.amount), 0);
-      const subTotal = state.subscriptions.filter(s => s.scope === scope).reduce((sum, s) => sum + Number(s.amount), 0);
+      const dashboard = getCurrentDashboard();
+      const expenseTotal = dashboard.expenses.filter(e => e.scope === scope).reduce((sum, e) => sum + Number(e.amount), 0);
+      const subTotal = dashboard.subscriptions.filter(s => s.scope === scope).reduce((sum, s) => sum + Number(s.amount), 0);
       return expenseTotal + subTotal;
     }
 
     function renderHighlights() {
+      const dashboard = getCurrentDashboard();
       const personalSpent = getScopeTotals('personal');
       const businessSpent = getScopeTotals('business');
       const totalSpent = personalSpent + businessSpent;
-      const personalEntries = state.expenses.filter(e => e.scope === 'personal').length + state.subscriptions.filter(s => s.scope === 'personal').length;
-      const businessEntries = state.expenses.filter(e => e.scope === 'business').length + state.subscriptions.filter(s => s.scope === 'business').length;
+      const personalEntries = dashboard.expenses.filter(e => e.scope === 'personal').length + dashboard.subscriptions.filter(s => s.scope === 'personal').length;
+      const businessEntries = dashboard.expenses.filter(e => e.scope === 'business').length + dashboard.subscriptions.filter(s => s.scope === 'business').length;
 
       document.getElementById('personal-spent').textContent = formatCurrency(personalSpent);
       document.getElementById('business-spent').textContent = formatCurrency(businessSpent);
       document.getElementById('total-spent').textContent = formatCurrency(totalSpent);
       document.getElementById('personal-count').textContent = `${personalEntries} entries`;
       document.getElementById('business-count').textContent = `${businessEntries} entries`;
-      document.getElementById('subscription-count').textContent = state.subscriptions.length;
-      const monthlySubs = state.subscriptions.reduce((sum, s) => sum + Number(s.amount), 0);
+      document.getElementById('subscription-count').textContent = dashboard.subscriptions.length;
+      const monthlySubs = dashboard.subscriptions.reduce((sum, s) => sum + Number(s.amount), 0);
       document.getElementById('subscription-total').textContent = `${formatCurrency(monthlySubs)} / cycle`;
-      document.getElementById('burn-rate').textContent = `${(totalSpent / (state.expenses.length + state.subscriptions.length || 1)).toFixed(2)} avg txn`;
+      document.getElementById('burn-rate').textContent = `${(totalSpent / (dashboard.expenses.length + dashboard.subscriptions.length || 1)).toFixed(2)} avg txn`;
 
-      const personalPercent = state.budgets.personal ? Math.min((personalSpent / state.budgets.personal) * 100, 200) : 0;
-      const businessPercent = state.budgets.business ? Math.min((businessSpent / state.budgets.business) * 100, 200) : 0;
+      const personalPercent = dashboard.budgets.personal ? Math.min((personalSpent / dashboard.budgets.personal) * 100, 200) : 0;
+      const businessPercent = dashboard.budgets.business ? Math.min((businessSpent / dashboard.budgets.business) * 100, 200) : 0;
       document.getElementById('personal-percent').textContent = `${personalPercent.toFixed(1)}%`;
       document.getElementById('business-percent').textContent = `${businessPercent.toFixed(1)}%`;
       document.getElementById('personal-bar').style.width = `${personalPercent}%`;
       document.getElementById('business-bar').style.width = `${businessPercent}%`;
-      document.getElementById('personal-left').textContent = formatCurrency(Math.max(state.budgets.personal - personalSpent, 0));
-      document.getElementById('business-left').textContent = formatCurrency(Math.max(state.budgets.business - businessSpent, 0));
-      document.getElementById('total-left').textContent = formatCurrency(Math.max((state.budgets.personal + state.budgets.business) - totalSpent, 0));
-      document.getElementById('status-balance').textContent = totalSpent > (state.budgets.personal + state.budgets.business) ? 'Overbudget – adjust now' : 'Healthy cash runway';
+      document.getElementById('personal-left').textContent = formatCurrency(Math.max(dashboard.budgets.personal - personalSpent, 0));
+      document.getElementById('business-left').textContent = formatCurrency(Math.max(dashboard.budgets.business - businessSpent, 0));
+      document.getElementById('total-left').textContent = formatCurrency(Math.max((dashboard.budgets.personal + dashboard.budgets.business) - totalSpent, 0));
+      document.getElementById('status-balance').textContent = totalSpent > (dashboard.budgets.personal + dashboard.budgets.business) ? 'Overbudget – adjust now' : 'Healthy cash runway';
 
       // Update budget page elements
       document.getElementById('budgets-personal-percent').textContent = `${personalPercent.toFixed(1)}%`;
       document.getElementById('budgets-business-percent').textContent = `${businessPercent.toFixed(1)}%`;
       document.getElementById('budgets-personal-bar').style.width = `${personalPercent}%`;
       document.getElementById('budgets-business-bar').style.width = `${businessPercent}%`;
-      document.getElementById('budgets-personal-left').textContent = formatCurrency(Math.max(state.budgets.personal - personalSpent, 0));
-      document.getElementById('budgets-business-left').textContent = formatCurrency(Math.max(state.budgets.business - businessSpent, 0));
-      document.getElementById('budgets-status-balance').textContent = totalSpent > (state.budgets.personal + state.budgets.business) ? 'Overbudget – adjust now' : 'Healthy cash runway';
-      document.getElementById('combined-budget').textContent = formatCurrency(state.budgets.personal + state.budgets.business);
+      document.getElementById('budgets-personal-left').textContent = formatCurrency(Math.max(dashboard.budgets.personal - personalSpent, 0));
+      document.getElementById('budgets-business-left').textContent = formatCurrency(Math.max(dashboard.budgets.business - businessSpent, 0));
+      document.getElementById('budgets-status-balance').textContent = totalSpent > (dashboard.budgets.personal + dashboard.budgets.business) ? 'Overbudget – adjust now' : 'Healthy cash runway';
+      document.getElementById('combined-budget').textContent = formatCurrency(dashboard.budgets.personal + dashboard.budgets.business);
     }
 
     function renderTables() {
+      const dashboard = getCurrentDashboard();
+      
       // Recent expenses table (overview)
       const recentExpenseBody = document.getElementById('recent-expense-table');
-      const recentExpenseRows = [...state.expenses]
+      const recentExpenseRows = [...dashboard.expenses]
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .slice(0, 5)
         .map(item => `
@@ -770,7 +875,7 @@
 
       // Recent subscriptions table (overview)
       const recentSubBody = document.getElementById('recent-subscription-table');
-      const recentSubRows = [...state.subscriptions]
+      const recentSubRows = [...dashboard.subscriptions]
         .sort((a, b) => new Date(a.date) - new Date(b.date))
         .slice(0, 5)
         .map(item => `
@@ -790,7 +895,7 @@
 
       // Full expense table (expenses page)
       const expenseBody = document.getElementById('expense-table');
-      const expenseRows = [...state.expenses]
+      const expenseRows = [...dashboard.expenses]
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .map(item => `
           <tr>
@@ -813,12 +918,12 @@
           </tr>
         `).join('');
       expenseBody.innerHTML = expenseRows || '<tr><td class="py-4 text-center text-slate-500" colspan="5">No expenses logged yet.</td></tr>';
-      document.getElementById('expense-count').textContent = `${state.expenses.length} entries`;
-      document.getElementById('expenses-total').textContent = formatCurrency(state.expenses.reduce((sum, e) => sum + Number(e.amount), 0));
+      document.getElementById('expense-count').textContent = `${dashboard.expenses.length} entries`;
+      document.getElementById('expenses-total').textContent = formatCurrency(dashboard.expenses.reduce((sum, e) => sum + Number(e.amount), 0));
 
       // Full subscription table (subscriptions page)
       const subBody = document.getElementById('subscription-table');
-      const subRows = [...state.subscriptions]
+      const subRows = [...dashboard.subscriptions]
         .sort((a, b) => new Date(a.date) - new Date(b.date))
         .map(item => `
           <tr>
@@ -841,17 +946,82 @@
           </tr>
         `).join('');
       subBody.innerHTML = subRows || '<tr><td class="py-4 text-center text-slate-500" colspan="5">No subscriptions on file.</td></tr>';
-      document.getElementById('subscription-page-count').textContent = `${state.subscriptions.length} entries`;
-      document.getElementById('subscriptions-total').textContent = formatCurrency(state.subscriptions.reduce((sum, s) => sum + Number(s.amount), 0));
+      document.getElementById('subscription-page-count').textContent = `${dashboard.subscriptions.length} entries`;
+      document.getElementById('subscriptions-total').textContent = formatCurrency(dashboard.subscriptions.reduce((sum, s) => sum + Number(s.amount), 0));
+    }
+
+    function renderDashboardList() {
+      const dashboardList = document.getElementById('dashboard-list');
+      const dashboardManagementList = document.getElementById('dashboard-management-list');
+      const dashboardCount = document.getElementById('dashboard-count');
+      
+      dashboardList.innerHTML = '';
+      dashboardManagementList.innerHTML = '';
+      
+      const dashboardIds = Object.keys(state.dashboards);
+      dashboardCount.textContent = `${dashboardIds.length} dashboard${dashboardIds.length !== 1 ? 's' : ''}`;
+      
+      dashboardIds.forEach(dashboardId => {
+        const dashboard = state.dashboards[dashboardId];
+        const isActive = state.currentDashboardId === dashboardId;
+        
+        // Sidebar dashboard list
+        const dashboardItem = document.createElement('div');
+        dashboardItem.className = `dashboard-item flex items-center justify-between p-3 rounded-xl cursor-pointer ${isActive ? 'active' : ''}`;
+        dashboardItem.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-2 h-2 rounded-full ${isActive ? 'bg-blue-400' : 'bg-slate-600'}"></div>
+            <span class="text-sm ${isActive ? 'text-white' : 'text-slate-400'}">${dashboard.name}</span>
+          </div>
+          <button class="delete-dashboard text-rose-400 hover:text-rose-300 text-xs" data-id="${dashboardId}">
+            ×
+          </button>
+        `;
+        dashboardItem.addEventListener('click', () => switchDashboard(dashboardId));
+        dashboardList.appendChild(dashboardItem);
+        
+        // Dashboard management list
+        const managementItem = document.createElement('div');
+        managementItem.className = 'glass rounded-2xl p-4';
+        managementItem.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div>
+              <h4 class="font-semibold">${dashboard.name}</h4>
+              <p class="text-xs text-slate-400 mt-1">${dashboard.description || 'No description'}</p>
+              <p class="text-xs text-slate-500 mt-1">Created: ${new Date(dashboard.createdAt).toLocaleDateString()}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="switch-dashboard px-3 py-1 bg-white/5 rounded-lg text-xs hover:bg-white/10 transition" data-id="${dashboardId}">
+                ${isActive ? 'Active' : 'Switch'}
+              </button>
+              <button class="delete-dashboard px-3 py-1 bg-rose-500/10 rounded-lg text-xs text-rose-300 hover:bg-rose-500/20 transition" data-id="${dashboardId}">
+                Delete
+              </button>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4 mt-4 text-xs">
+            <div class="text-center">
+              <p class="text-slate-400">Expenses</p>
+              <p class="font-semibold">${dashboard.expenses.length}</p>
+            </div>
+            <div class="text-center">
+              <p class="text-slate-400">Subscriptions</p>
+              <p class="font-semibold">${dashboard.subscriptions.length}</p>
+            </div>
+          </div>
+        `;
+        dashboardManagementList.appendChild(managementItem);
+      });
     }
 
     function aggregateCategories(scope) {
+      const dashboard = getCurrentDashboard();
       const bucket = {};
-      state.expenses.filter(e => e.scope === scope).forEach(e => {
+      dashboard.expenses.filter(e => e.scope === scope).forEach(e => {
         const key = e.category || 'Uncategorized';
         bucket[key] = (bucket[key] || 0) + Number(e.amount);
       });
-      state.subscriptions.filter(s => s.scope === scope).forEach(s => {
+      dashboard.subscriptions.filter(s => s.scope === scope).forEach(s => {
         const key = `${s.category || s.name}`;
         bucket[key] = (bucket[key] || 0) + Number(s.amount);
       });
@@ -866,11 +1036,12 @@
     }
 
     function getExpenseTrendData() {
+      const dashboard = getCurrentDashboard();
       // Get expenses from the last 30 days
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
-      const recentExpenses = state.expenses.filter(expense => 
+      const recentExpenses = dashboard.expenses.filter(expense => 
         new Date(expense.date) >= thirtyDaysAgo
       );
       
@@ -903,9 +1074,10 @@
     }
 
     function getSubscriptionData() {
+      const dashboard = getCurrentDashboard();
       // Group subscriptions by billing cycle
       const billingData = {};
-      state.subscriptions.forEach(sub => {
+      dashboard.subscriptions.forEach(sub => {
         if (!billingData[sub.billing]) {
           billingData[sub.billing] = 0;
         }
@@ -919,6 +1091,7 @@
     }
 
     function initCharts() {
+      const dashboard = getCurrentDashboard();
       const combinedCtx = document.getElementById('combinedChart').getContext('2d');
       const personalCtx = document.getElementById('personalChart').getContext('2d');
       const businessCtx = document.getElementById('businessChart').getContext('2d');
@@ -931,7 +1104,7 @@
           datasets: [
             {
               label: 'Budget',
-              data: [state.budgets.personal, state.budgets.business],
+              data: [dashboard.budgets.personal, dashboard.budgets.business],
               backgroundColor: ['rgba(244, 114, 182, 0.3)', 'rgba(96, 165, 250, 0.3)'],
               borderColor: ['rgba(244, 114, 182, 1)', 'rgba(96, 165, 250, 1)'],
               borderWidth: 2
@@ -944,7 +1117,7 @@
             },
             {
               label: 'Remaining',
-              data: [Math.max(state.budgets.personal - getScopeTotals('personal'), 0), Math.max(state.budgets.business - getScopeTotals('business'), 0)],
+              data: [Math.max(dashboard.budgets.personal - getScopeTotals('personal'), 0), Math.max(dashboard.budgets.business - getScopeTotals('business'), 0)],
               backgroundColor: ['rgba(16, 185, 129, 0.4)', 'rgba(34, 197, 94, 0.4)']
             }
           ]
@@ -980,7 +1153,7 @@
           datasets: [
             {
               label: 'Budget',
-              data: [state.budgets.personal, state.budgets.business],
+              data: [dashboard.budgets.personal, dashboard.budgets.business],
               backgroundColor: ['rgba(244, 114, 182, 0.3)', 'rgba(96, 165, 250, 0.3)'],
               borderColor: ['rgba(244, 114, 182, 1)', 'rgba(96, 165, 250, 1)'],
               borderWidth: 2
@@ -993,7 +1166,7 @@
             },
             {
               label: 'Remaining',
-              data: [Math.max(state.budgets.personal - getScopeTotals('personal'), 0), Math.max(state.budgets.business - getScopeTotals('business'), 0)],
+              data: [Math.max(dashboard.budgets.personal - getScopeTotals('personal'), 0), Math.max(dashboard.budgets.business - getScopeTotals('business'), 0)],
               backgroundColor: ['rgba(16, 185, 129, 0.4)', 'rgba(34, 197, 94, 0.4)']
             }
           ]
@@ -1131,16 +1304,17 @@
     }
 
     function updateCharts() {
+      const dashboard = getCurrentDashboard();
       if (!combinedChart) return;
-      combinedChart.data.datasets[0].data = [state.budgets.personal, state.budgets.business];
+      combinedChart.data.datasets[0].data = [dashboard.budgets.personal, dashboard.budgets.business];
       combinedChart.data.datasets[1].data = [getScopeTotals('personal'), getScopeTotals('business')];
-      combinedChart.data.datasets[2].data = [Math.max(state.budgets.personal - getScopeTotals('personal'), 0), Math.max(state.budgets.business - getScopeTotals('business'), 0)];
+      combinedChart.data.datasets[2].data = [Math.max(dashboard.budgets.personal - getScopeTotals('personal'), 0), Math.max(dashboard.budgets.business - getScopeTotals('business'), 0)];
       combinedChart.update();
 
       if (budgetsCombinedChart) {
-        budgetsCombinedChart.data.datasets[0].data = [state.budgets.personal, state.budgets.business];
+        budgetsCombinedChart.data.datasets[0].data = [dashboard.budgets.personal, dashboard.budgets.business];
         budgetsCombinedChart.data.datasets[1].data = [getScopeTotals('personal'), getScopeTotals('business')];
-        budgetsCombinedChart.data.datasets[2].data = [Math.max(state.budgets.personal - getScopeTotals('personal'), 0), Math.max(state.budgets.business - getScopeTotals('business'), 0)];
+        budgetsCombinedChart.data.datasets[2].data = [Math.max(dashboard.budgets.personal - getScopeTotals('personal'), 0), Math.max(dashboard.budgets.business - getScopeTotals('business'), 0)];
         budgetsCombinedChart.update();
       }
 
@@ -1185,13 +1359,16 @@
     }
 
     function render() {
+      const dashboard = getCurrentDashboard();
+      document.getElementById('current-dashboard-name').textContent = dashboard.name;
       renderHighlights();
       renderTables();
+      renderDashboardList();
       updateCharts();
-      document.querySelector('[name="personalBudget"]').value = state.budgets.personal;
-      document.querySelector('[name="businessBudget"]').value = state.budgets.business;
-      document.getElementById('budgets-budget-form').querySelector('[name="personalBudget"]').value = state.budgets.personal;
-      document.getElementById('budgets-budget-form').querySelector('[name="businessBudget"]').value = state.budgets.business;
+      document.querySelector('[name="personalBudget"]').value = dashboard.budgets.personal;
+      document.querySelector('[name="businessBudget"]').value = dashboard.budgets.business;
+      document.getElementById('budgets-budget-form').querySelector('[name="personalBudget"]').value = dashboard.budgets.personal;
+      document.getElementById('budgets-budget-form').querySelector('[name="businessBudget"]').value = dashboard.budgets.business;
     }
 
     function downloadData() {
@@ -1199,16 +1376,8 @@
       const dataToDownload = {
         exportDate: new Date().toISOString(),
         version: '1.0',
-        budgets: state.budgets,
-        expenses: state.expenses,
-        subscriptions: state.subscriptions,
-        summary: {
-          personalSpent: getScopeTotals('personal'),
-          businessSpent: getScopeTotals('business'),
-          totalSpent: getScopeTotals('personal') + getScopeTotals('business'),
-          personalRemaining: Math.max(state.budgets.personal - getScopeTotals('personal'), 0),
-          businessRemaining: Math.max(state.budgets.business - getScopeTotals('business'), 0)
-        }
+        dashboards: state.dashboards,
+        currentDashboardId: state.currentDashboardId
       };
       
       // Create a JSON string
@@ -1223,7 +1392,7 @@
       // Create a temporary anchor element to trigger the download
       const link = document.createElement('a');
       link.href = url;
-      link.download = `ledger-luxe-data-${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `ledger-luxe-dashboards-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -1232,7 +1401,51 @@
       URL.revokeObjectURL(url);
       
       // Show success message
-      alert('Your financial data has been downloaded! You can now send this file to your email.');
+      alert('Your dashboard data has been downloaded! You can now send this file to your email.');
+    }
+
+    function switchDashboard(dashboardId) {
+      state.currentDashboardId = dashboardId;
+      saveState();
+      render();
+    }
+
+    function createDashboard(name, description, personalBudget = 0, businessBudget = 0) {
+      const id = 'dashboard_' + Date.now();
+      state.dashboards[id] = {
+        id,
+        name,
+        description,
+        createdAt: new Date().toISOString(),
+        budgets: {
+          personal: Number(personalBudget) || 0,
+          business: Number(businessBudget) || 0
+        },
+        expenses: [],
+        subscriptions: []
+      };
+      saveState();
+      render();
+      switchDashboard(id);
+    }
+
+    function deleteDashboard(dashboardId) {
+      if (Object.keys(state.dashboards).length <= 1) {
+        alert('You must have at least one dashboard.');
+        return;
+      }
+      
+      if (confirm(`Are you sure you want to delete the "${state.dashboards[dashboardId].name}" dashboard? This action cannot be undone.`)) {
+        delete state.dashboards[dashboardId];
+        
+        // If we deleted the current dashboard, switch to the first available one
+        if (state.currentDashboardId === dashboardId) {
+          state.currentDashboardId = Object.keys(state.dashboards)[0];
+        }
+        
+        saveState();
+        render();
+      }
     }
 
     function switchTab(tabName) {
@@ -1255,32 +1468,30 @@
       document.querySelector(`.nav-btn[data-tab="${tabName}"]`).classList.remove('text-slate-400');
     }
 
-    function toggleForm(formId) {
-      const form = document.getElementById(formId);
-      form.classList.toggle('hidden');
-    }
-
     // Event Listeners
     document.getElementById('budget-form').addEventListener('submit', (e) => {
       e.preventDefault();
+      const dashboard = getCurrentDashboard();
       const form = e.target;
-      state.budgets.personal = Number(form.personalBudget.value) || 0;
-      state.budgets.business = Number(form.businessBudget.value) || 0;
+      dashboard.budgets.personal = Number(form.personalBudget.value) || 0;
+      dashboard.budgets.business = Number(form.businessBudget.value) || 0;
       saveState();
       render();
     });
 
     document.getElementById('budgets-budget-form').addEventListener('submit', (e) => {
       e.preventDefault();
+      const dashboard = getCurrentDashboard();
       const form = e.target;
-      state.budgets.personal = Number(form.personalBudget.value) || 0;
-      state.budgets.business = Number(form.businessBudget.value) || 0;
+      dashboard.budgets.personal = Number(form.personalBudget.value) || 0;
+      dashboard.budgets.business = Number(form.businessBudget.value) || 0;
       saveState();
       render();
     });
 
     document.getElementById('expense-form').addEventListener('submit', (e) => {
       e.preventDefault();
+      const dashboard = getCurrentDashboard();
       const data = new FormData(e.target);
       const newExpense = {
         id: crypto.randomUUID(),
@@ -1290,7 +1501,7 @@
         scope: data.get('scope'),
         date: data.get('date') || new Date().toISOString()
       };
-      state.expenses.push(newExpense);
+      dashboard.expenses.push(newExpense);
       saveState();
       render();
       e.target.reset();
@@ -1299,6 +1510,7 @@
 
     document.getElementById('subscription-form').addEventListener('submit', (e) => {
       e.preventDefault();
+      const dashboard = getCurrentDashboard();
       const data = new FormData(e.target);
       const newSub = {
         id: crypto.randomUUID(),
@@ -1308,7 +1520,7 @@
         scope: data.get('scope'),
         date: data.get('date') || new Date().toISOString()
       };
-      state.subscriptions.push(newSub);
+      dashboard.subscriptions.push(newSub);
       saveState();
       render();
       e.target.reset();
@@ -1318,6 +1530,7 @@
     // Quick Add Forms
     document.getElementById('quick-expense-form').addEventListener('submit', (e) => {
       e.preventDefault();
+      const dashboard = getCurrentDashboard();
       const data = new FormData(e.target);
       const newExpense = {
         id: crypto.randomUUID(),
@@ -1327,7 +1540,7 @@
         scope: data.get('scope'),
         date: new Date().toISOString()
       };
-      state.expenses.push(newExpense);
+      dashboard.expenses.push(newExpense);
       saveState();
       render();
       e.target.reset();
@@ -1347,6 +1560,7 @@
 
     document.getElementById('quick-subscription-form').addEventListener('submit', (e) => {
       e.preventDefault();
+      const dashboard = getCurrentDashboard();
       const data = new FormData(e.target);
       const newSub = {
         id: crypto.randomUUID(),
@@ -1356,7 +1570,7 @@
         scope: data.get('scope'),
         date: new Date().toISOString()
       };
-      state.subscriptions.push(newSub);
+      dashboard.subscriptions.push(newSub);
       saveState();
       render();
       e.target.reset();
@@ -1374,21 +1588,53 @@
       }, 1500);
     });
 
+    // Create Dashboard Form
+    document.getElementById('create-dashboard-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      const name = data.get('name');
+      const description = data.get('description');
+      const personalBudget = data.get('personalBudget');
+      const businessBudget = data.get('businessBudget');
+      
+      createDashboard(name, description, personalBudget, businessBudget);
+      e.target.reset();
+      
+      // Switch to the new dashboard
+      switchTab('overview');
+    });
+
     document.addEventListener('click', (e) => {
       // Delete expense or subscription
       if (e.target.closest('.delete-btn')) {
         const btn = e.target.closest('.delete-btn');
         const id = btn.getAttribute('data-id');
         const type = btn.getAttribute('data-type');
+        const dashboard = getCurrentDashboard();
         
         if (type === 'expense') {
-          state.expenses = state.expenses.filter(item => item.id != id);
+          dashboard.expenses = dashboard.expenses.filter(item => item.id != id);
         } else if (type === 'subscription') {
-          state.subscriptions = state.subscriptions.filter(item => item.id != id);
+          dashboard.subscriptions = dashboard.subscriptions.filter(item => item.id != id);
         }
         
         saveState();
         render();
+      }
+      
+      // Delete dashboard
+      if (e.target.closest('.delete-dashboard')) {
+        const btn = e.target.closest('.delete-dashboard');
+        const dashboardId = btn.getAttribute('data-id');
+        deleteDashboard(dashboardId);
+      }
+      
+      // Switch dashboard from management page
+      if (e.target.closest('.switch-dashboard')) {
+        const btn = e.target.closest('.switch-dashboard');
+        const dashboardId = btn.getAttribute('data-id');
+        switchDashboard(dashboardId);
+        switchTab('overview');
       }
       
       // Tab navigation
@@ -1400,8 +1646,12 @@
     });
 
     document.getElementById('reset-btn').addEventListener('click', () => {
-      if (confirm('Are you sure you want to reset all data? This will clear all expenses, subscriptions, and budgets.')) {
-        state = structuredClone(stateDefaults);
+      const dashboard = getCurrentDashboard();
+      if (confirm('Are you sure you want to reset all data in the current dashboard? This will clear all expenses, subscriptions, and budgets.')) {
+        dashboard.budgets.personal = 0;
+        dashboard.budgets.business = 0;
+        dashboard.expenses = [];
+        dashboard.subscriptions = [];
         saveState();
         render();
       }
@@ -1409,13 +1659,22 @@
 
     document.getElementById('download-btn').addEventListener('click', downloadData);
 
+    document.getElementById('create-dashboard-btn').addEventListener('click', () => {
+      switchTab('dashboards');
+    });
+
+    document.getElementById('create-dashboard-main').addEventListener('click', () => {
+      document.getElementById('create-dashboard-form').scrollIntoView({ behavior: 'smooth' });
+    });
+
     document.getElementById('quick-log').addEventListener('click', () => {
+      const dashboard = getCurrentDashboard();
       const scope = prompt('Scope? personal / business');
       if (!scope || !['personal', 'business'].includes(scope.toLowerCase())) return;
       const amount = Number(prompt('Amount in USD?'));
       if (!amount) return;
       const description = prompt('Description?') || 'Quick log';
-      state.expenses.push({
+      dashboard.expenses.push({
         id: crypto.randomUUID(),
         description,
         amount,
